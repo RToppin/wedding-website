@@ -9,7 +9,7 @@ function RSVP(){
     const [status, setStatus] = useState({state:"idle", msg:""});
 
     async function onSubmit(e) {
-        e.preventDefualt();
+        console.log("submitted");
         setStatus({state: "loading", msg: ""});
 
         if(!firstName.trim() || !lastName.trim()) {
@@ -33,11 +33,6 @@ function RSVP(){
         setStatus({state: "success", msg:"RSVP submitted successfully!"});
     }
     
-
-
-
-
-
     return(
         <div className="text-center text-xl py-2 text-emerald-700 font-playfair min-h-screen max-h-fit bg-gold-50">
 
@@ -76,7 +71,7 @@ function RSVP(){
             </div>
 
             <div className="text-center">
-                <button className="bg-emerald-700 text-gold-500 text-3xl rounded-lg py-2 px-6">Submit</button>
+                <button onClick={onSubmit} className="bg-emerald-700 text-gold-500 text-3xl rounded-lg py-2 px-6">Submit</button>
             </div>
             
             </div>
