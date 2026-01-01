@@ -20,8 +20,17 @@ function RSVP(){
             setStatus({state: "error", msg:"Please enter a valid email."});
         }
 
-        
-        
+        await fetch("/api/sheets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                firstName,
+                lastName,
+                email,
+            }),
+        });
+
+        setStatus({state: "success", msg:"RSVP submitted successfully!"});
     }
     
 
