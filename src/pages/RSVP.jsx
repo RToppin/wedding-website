@@ -5,14 +5,18 @@ function RSVP(){
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
-    const [party, setParty] = useState("");
     const [status, setStatus] = useState({state:"idle", msg:""});
 
     async function onSubmit(e) {
-        console.log("submitted");
+        
         setStatus({state: "loading", msg: ""});
+        setFirstName(e.target.value);
+        setLastName(e.target.value);
+        setEmail(e.target.value);
 
-        if(!firstName.trim() || !lastName.trim()) {
+        console.log(firstName, lastName, email);
+
+        if(!firstName.trim() === "" || !lastName.trim() === "") {
             setStatus({state: "error", msg:"Please enter a valid first and last name."});
         }
 
@@ -20,17 +24,18 @@ function RSVP(){
             setStatus({state: "error", msg:"Please enter a valid email."});
         }
 
-        await fetch("/api/sheets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                firstName,
-                lastName,
-                email,
-            }),
-        });
-
+        // await fetch("/api/sheets", {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify({
+        //         firstName,
+        //         lastName,
+        //         email,
+        //     }),
+        // });
+        
         setStatus({state: "success", msg:"RSVP submitted successfully!"});
+        console.log("submitted");
     }
     
     return(
@@ -69,7 +74,7 @@ function RSVP(){
                 <input type="radio" name="attending"></input>
                 <label>Declines with regret</label>
             </div>
-
+        
             <div className="text-center">
                 <button onClick={onSubmit} className="bg-emerald-700 text-gold-500 text-3xl rounded-lg py-2 px-6">Submit</button>
             </div>
