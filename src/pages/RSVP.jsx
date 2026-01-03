@@ -7,23 +7,29 @@ function RSVP(){
     const [email, setEmail] = useState("");
     const [status, setStatus] = useState({state:"idle", msg:""});
 
-    async function onSubmit(e) {
+    function handleChange(e, setter) {
+        setter(e.target.value);
+    }
+
+    async function onSubmit() {
         
         setStatus({state: "loading", msg: ""});
-        setFirstName(e.target.value);
-        setLastName(e.target.value);
-        setEmail(e.target.value);
-
+        
         console.log(firstName, lastName, email);
 
-        if(!firstName.trim() === "" || !lastName.trim() === "") {
+        if(!firstName.trim() || !lastName.trim()) {
             setStatus({state: "error", msg:"Please enter a valid first and last name."});
         }
 
-        if(!/^\S+@\S+\.\S+$/) {
+        if(!email.match(/^\S+@\S+\.\S+$/)) {
             setStatus({state: "error", msg:"Please enter a valid email."});
         }
 
+        console.log(status);
+        
+        if(status.state === "error") {
+            return;
+        }
         // await fetch("/api/sheets", {
         //     method: "POST",
         //     headers: { "Content-Type": "application/json" },
@@ -36,6 +42,9 @@ function RSVP(){
         
         setStatus({state: "success", msg:"RSVP submitted successfully!"});
         console.log("submitted");
+        setFirstName("");
+        setLastName("");
+        setEmail("");
     }
     
     return(
@@ -46,23 +55,18 @@ function RSVP(){
 
         {/* FORM CONTAINER */}
         <div className="flex flex-col text-left w-[320px] mx-auto mt-8 space-y-6">
-            
-            <div>
-            <span className="font-semibold text-2xl">Name </span>
-            <span className="text-emerald-600">(required)</span>
-            </div>
 
             <label>First Name</label>
-            <input type="text" className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
+            <input type="text" onChange={(e) => handleChange(e, setFirstName)} className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
 
             <label>Last Name</label>
-            <input type="text" className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
+            <input type="text" onChange={(e) => handleChange(e, setLastName)} className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
 
             <div>
-            <span className="font-semibold text-2xl">Email </span>
-            <span className="text-emerald-600">(required)</span>
+            <label>Email</label>
+
             </div>
-            <input type="text" className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
+            <input type="text" onChange={(e) => handleChange(e, setEmail)} className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
 
             <div>
             <span className="font-semibold text-2xl">RSVP</span>
