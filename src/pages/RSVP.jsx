@@ -12,39 +12,33 @@ function RSVP(){
     }
 
     async function onSubmit() {
-        
-        setStatus({state: "loading", msg: ""});
-        
-        console.log(firstName, lastName, email);
 
+        // Check for valid inputs
+        status.state = "idle";
         if(!firstName.trim() || !lastName.trim()) {
             setStatus({state: "error", msg:"Please enter a valid first and last name."});
+            console.log("invalid name");
+            return;
         }
 
         if(!email.match(/^\S+@\S+\.\S+$/)) {
             setStatus({state: "error", msg:"Please enter a valid email."});
-        }
-
-        console.log(status);
-        
-        if(status.state === "error") {
+            console.log("invalid email");
             return;
         }
-        // await fetch("/api/sheets", {
-        //     method: "POST",
-        //     headers: { "Content-Type": "application/json" },
-        //     body: JSON.stringify({
-        //         firstName,
-        //         lastName,
-        //         email,
-        //     }),
-        // });
+
+        await fetch("/api/sheets", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                firstName,
+                lastName,
+                email,
+            }),
+        });
         
         setStatus({state: "success", msg:"RSVP submitted successfully!"});
-        console.log("submitted");
-        setFirstName("");
-        setLastName("");
-        setEmail("");
+        console.log("submitted RSVP");
     }
     
     return(
@@ -67,6 +61,7 @@ function RSVP(){
 
             </div>
             <input type="text" onChange={(e) => handleChange(e, setEmail)} className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
+            <span className={status.state === "error" ? "text-red-600" : "text-emerald-700"}>{status.msg}</span>
 
             <div>
             <span className="font-semibold text-2xl">RSVP</span>
