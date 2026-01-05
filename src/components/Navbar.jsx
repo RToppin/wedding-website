@@ -1,25 +1,85 @@
+function Navbar({ 
+  onHeroClick,
+  onRsvpClick, 
+  onTimelineClick, 
+  onLocationClick, 
+  onTravelClick, 
+  onFAQClick 
+}) {
+  return (
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 px-8 py-4"
+      style={{ backgroundColor: "#301413" }}
+    >
+      <div className="max-w-7xl mx-auto flex justify-center gap-8">
+        <button
+          onClick={onHeroClick}
+          className="capitalize transition-opacity hover:opacity-80"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Cormorant", serif',
+          }}
+        >
+          Home
+        </button>
 
-function Navbar_Btn({label, onClick}){
-    return(
-        <li className="flex-1 text-center bg-maroon-oak hover:bg-[#612727] p-4">
-            <button onClick={onClick} className="w-full bg-transparent">{label}</button>
-        </li>
-    );
+        <button
+          onClick={onRsvpClick}
+          className="capitalize transition-opacity hover:opacity-80"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Cormorant", serif',
+          }}
+        >
+          RSVP
+        </button>
+
+        <button
+          onClick={onTimelineClick}
+          className="capitalize transition-opacity hover:opacity-80"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Cormorant", serif',
+          }}
+        >
+          Timeline
+        </button>
+
+        <button
+          onClick={onLocationClick}
+          className="capitalize transition-opacity hover:opacity-80"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Cormorant", serif',
+          }}
+        >
+          Location
+        </button>
+
+        <button
+          onClick={onTravelClick}
+          className="capitalize transition-opacity hover:opacity-80"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Cormorant", serif',
+          }}
+        >
+          Travel
+        </button>
+
+        <button
+          onClick={onFAQClick}
+          className="capitalize transition-opacity hover:opacity-80"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Cormorant", serif',
+          }}
+        >
+          FAQ
+        </button>
+      </div>
+    </nav>
+  );
 }
 
-function Navbar({onRsvpClick, onTimelineClick, onLocationClick, onTravelClick, onFAQClick}){
-    return(
-        <>
-            <ul className='flex items-center justify-center bg-maroon-oak text-white text-xl font-playfair'>
-                <Navbar_Btn onClick={onRsvpClick} label='RSVP'/>
-                <Navbar_Btn onClick={onTimelineClick} label='Timeline'/>
-                <Navbar_Btn onClick={onLocationClick} label='Location'/>
-                <Navbar_Btn onClick={onTravelClick} label='Travel'/>
-                <Navbar_Btn onClick={onFAQClick} label='FAQ'/>
-
-            </ul>
-        </>
-    );
-}
-
-export default Navbar
+export default Navbar;
