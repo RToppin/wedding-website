@@ -1,11 +1,8 @@
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@radix-ui/react-accordion";
+import { useState } from "react";
 
 function FAQ() {
+  const [openIndex, setOpenIndex] = useState(null);
+
   const faqs = [
     {
       question: "What should I wear?",
@@ -34,6 +31,10 @@ function FAQ() {
     },
   ];
 
+  function toggle(i) {
+    setOpenIndex((curr) => (curr === i ? null : i));
+  }
+
   return (
     <section
       id="faq"
@@ -51,40 +52,55 @@ function FAQ() {
           Frequently Asked Questions
         </h2>
 
-        <Accordion type="single" collapsible className="space-y-4">
-          {faqs.map((faq, index) => (
-            <AccordionItem
-              key={index}
-              value={`item-${index}`}
-              className="border-2 rounded-lg px-6"
-              style={{
-                borderColor: "#594836",
-                backgroundColor: "#301413",
-              }}
-            >
-              <AccordionTrigger
-                className="hover:no-underline py-4 text-left"
-                style={{
-                  color: "#A1937E",
-                  fontFamily: '"Playfair Display", serif',
-                }}
-              >
-                {faq.question}
-              </AccordionTrigger>
+        <div className="space-y-4">
+          {faqs.map((faq, i) => {
+            const isOpen = openIndex === i;
 
-              <AccordionContent
-                className="pb-4"
+            return (
+              <div
+                key={i}
+                className="border-2 rounded-lg px-6"
                 style={{
-                  color: "#A18B8E",
-                  fontFamily: '"Cormorant", serif',
-                  lineHeight: "1.8",
+                  borderColor: "#594836",
+                  backgroundColor: "#301413",
                 }}
               >
-                {faq.answer}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                <button
+                  type="button"
+                  onClick={() => toggle(i)}
+                  className="w-full py-4 flex items-center justify-between text-left"
+                  style={{
+                    color: "#A1937E",
+                    fontFamily: '"Playfair Display", serif',
+                  }}
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-xl md:text-2xl">{faq.question}</span>
+                  <span
+                    className="ml-6 text-2xl leading-none"
+                    style={{ color: "#A1937E" }}
+                    aria-hidden="true"
+                  >
+                    {isOpen ? "−" : "+"}
+                  </span>
+                </button>
+
+                {isOpen && (
+                  <div
+                    className="pb-5"
+                    style={{
+                      color: "#A18B8E",
+                      fontFamily: '"Cormorant", serif',
+                      lineHeight: "1.8",
+                    }}
+                  >
+                    {faq.answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

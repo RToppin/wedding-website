@@ -1,47 +1,34 @@
-import { useState } from "react";
-
-function FAQ() {
-  const [openIndex, setOpenIndex] = useState(null);
-
-  const faqs = [
+function Timeline() {
+  const timelineItems = [
     {
-      question: "What should I wear?",
-      answer:
-        "The dress code is formal attire. We kindly ask that guests wear elegant evening wear befitting a romantic celebration.",
+      time: "3:00 PM",
+      event: "Ceremony",
+      description: "Join us as we exchange our vows",
     },
     {
-      question: "Can I bring a guest?",
-      answer:
-        "Due to venue capacity, we are only able to accommodate guests specifically named on your invitation. Thank you for understanding.",
+      time: "4:30 PM",
+      event: "Cocktail Hour",
+      description: "Refreshments and mingling in the garden",
     },
     {
-      question: "Will there be parking available?",
-      answer:
-        "Yes, complimentary valet parking will be provided at the venue. Additional parking is available in the adjacent lot.",
+      time: "6:00 PM",
+      event: "Reception",
+      description: "Dinner, dancing, and celebration",
     },
     {
-      question: "Are children welcome?",
-      answer:
-        "While we love your little ones, we have planned an adults-only celebration. We hope this gives you an opportunity to enjoy an evening out.",
-    },
-    {
-      question: "What time should I arrive?",
-      answer:
-        "Please arrive by 2:45 PM to be seated before the ceremony begins at 3:00 PM sharp.",
+      time: "10:00 PM",
+      event: "Last Dance",
+      description: "Send-off under the stars",
     },
   ];
 
-  function toggle(i) {
-    setOpenIndex((curr) => (curr === i ? null : i));
-  }
-
   return (
     <section
-      id="faq"
+      id="timeline"
       className="py-24 px-8 min-h-screen"
       style={{ backgroundColor: "#170704" }}
     >
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <h2
           className="text-center mb-16 text-5xl md:text-6xl"
           style={{
@@ -49,61 +36,72 @@ function FAQ() {
             fontFamily: '"Playfair Display", serif',
           }}
         >
-          Frequently Asked Questions
+          Timeline
         </h2>
 
-        <div className="space-y-4">
-          {faqs.map((faq, i) => {
-            const isOpen = openIndex === i;
-
-            return (
+        <div className="space-y-12">
+          {timelineItems.map((item, index) => (
+            <div key={index} className="flex gap-8 items-start">
+              {/* Time */}
               <div
-                key={i}
-                className="border-2 rounded-lg px-6"
+                className="w-32 text-right flex-shrink-0"
                 style={{
-                  borderColor: "#594836",
-                  backgroundColor: "#301413",
+                  color: "#A18B8E",
+                  fontFamily: '"Cormorant", serif',
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => toggle(i)}
-                  className="w-full py-4 flex items-center justify-between text-left"
+                {item.time}
+              </div>
+
+              {/* Dot + line */}
+              <div className="relative pt-1">
+                <div
+                  className="absolute left-0 w-3 h-3 rounded-full"
+                  style={{
+                    backgroundColor: "#612727",
+                    top: "8px",
+                    transform: "translateX(-50%)",
+                  }}
+                />
+                {index < timelineItems.length - 1 && (
+                  <div
+                    className="absolute left-0 w-px top-6"
+                    style={{
+                      backgroundColor: "#594836",
+                      height: "80px",
+                      transform: "translateX(-50%)",
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="flex-1">
+                <h3
+                  className="mb-2 text-2xl"
                   style={{
                     color: "#A1937E",
                     fontFamily: '"Playfair Display", serif',
                   }}
-                  aria-expanded={isOpen}
                 >
-                  <span className="text-xl md:text-2xl">{faq.question}</span>
-                  <span
-                    className="ml-6 text-2xl leading-none"
-                    style={{ color: "#A1937E" }}
-                    aria-hidden="true"
-                  >
-                    {isOpen ? "−" : "+"}
-                  </span>
-                </button>
-
-                {isOpen && (
-                  <div
-                    className="pb-5"
-                    style={{
-                      color: "#A18B8E",
-                      fontFamily: '"Cormorant", serif',
-                      lineHeight: "1.8",
-                    }}
-                  >
-                    {faq.answer}
-                  </div>
-                )}
+                  {item.event}
+                </h3>
+                <p
+                  style={{
+                    color: "#A18B8E",
+                    fontFamily: '"Cormorant", serif',
+                    lineHeight: "1.8",
+                  }}
+                >
+                  {item.description}
+                </p>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
 
-export default FAQ;
+export default Timeline;
