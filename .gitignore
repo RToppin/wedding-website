@@ -26,3 +26,5 @@ dist-ssr
 # Keys
 
 key.json
+.vercel
+.env*.local

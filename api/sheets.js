@@ -1,42 +1,40 @@
+import { JWT } from "google-auth-library";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
+    
+    const { firstName, lastName, email } = req.body ?? {};
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
 
-  try {
-    const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID);
-
-    await doc.useServiceAccountAuth({
-      client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+    const auth = new JWT({
+      email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+      key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
     });
 
-    await doc.loadInfo();
-    const sheet = doc.sheetsByIndex[0];
+    const doc = new GoogleSpreadsheet(
+      process.env.GOOGLE_SHEET_ID,
+      auth
+    );
 
-    const { name, email } = req.body;
+    try {
+      await doc.loadInfo();
+      const sheet = doc.sheetsByTitle["RSVPs"];
+      
+      await sheet.addRow({
+        Name: `${firstName} ${lastName}`,
+        Email: email,
+        Timestamp: new Date().toISOString(),
+      });
 
-    await sheet.addRow({
-      Name: name,
-      Email: email,
-      Timestamp: new Date().toISOString(),
-    });
-
-    res.status(200).json({ success: true });
+      res.status(200).json({ message: "RSVP recorded successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to write to sheet" });
   }
 }
-
-await fetch("/api/sheets", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    name,
-    email,
-  }),
-});
-

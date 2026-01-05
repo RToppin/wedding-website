@@ -5,6 +5,7 @@ import Location from './pages/Location'
 import RSVP from './pages/RSVP'
 import Timeline from './pages/Timeline'
 import Travel from './pages/Travel'
+import FAQ from './pages/FAQ'
 import Footer from './components/Footer'
 import { useRef } from 'react'
 
@@ -15,6 +16,7 @@ function App() {
   const timelineRef = useRef(null);
   const locationRef = useRef(null);
   const travelRef = useRef(null);
+  const faqRef = useRef(null);
 
   const scrollToRsvp = () => {
     rsvpRef.current?.scrollIntoView({ behavior: "smooth"});
@@ -31,14 +33,20 @@ function App() {
   const scrollToTravel = () => {
     travelRef.current?.scrollIntoView({ behavior: "smooth"});
   };
+
+  const scrollToFAQ = () => {
+    faqRef.current?.scrollIntoView({ behavior: "smooth"});
+  };
+
   return (
     <>
       <div className='min-h-screen max-h-fit flex flex-col'>
-        <Navbar 
+        <Navbar
           onRsvpClick={scrollToRsvp}
           onTimelineClick={scrollToTimeline}
           onLocationClick={scrollToLocation}
           onTravelClick={scrollToTravel}
+          onFAQClick={scrollToFAQ}
         />
         <Invite className="flex-1" />
       </div>
@@ -46,6 +54,7 @@ function App() {
       <div ref={timelineRef}><Timeline /></div>
       <div ref={locationRef}><Location /></div>
       <div ref={travelRef}><Travel /></div>  
+      <div ref={faqRef}><FAQ /></div>  
       <div><Footer /></div>
     </>
   );
