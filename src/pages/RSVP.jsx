@@ -1,89 +1,196 @@
 import { useState } from "react";
 
-function RSVP(){
-        
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [email, setEmail] = useState("");
-    const [status, setStatus] = useState({state:"idle", msg:""});
+function RSVP() {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [attendance, setAttendance] = useState(""); // "yes" | "no"
+  const [status, setStatus] = useState({ state: "idle", msg: "" });
 
-    function handleChange(e, setter) {
-        setter(e.target.value);
+  function handleChange(e, setter) {
+    setter(e.target.value);
+  }
+
+  async function onSubmit(e) {
+    e.preventDefault();
+
+    if (!firstName.trim() || !lastName.trim()) {
+      setStatus({ state: "error", msg: "Please enter a valid first and last name." });
+      return;
     }
 
-    async function onSubmit() {
-
-        // Check for valid inputs
-        status.state = "idle";
-        if(!firstName.trim() || !lastName.trim()) {
-            setStatus({state: "error", msg:"Please enter a valid first and last name."});
-            console.log("invalid name");
-            return;
-        }
-
-        if(!email.match(/^\S+@\S+\.\S+$/)) {
-            setStatus({state: "error", msg:"Please enter a valid email."});
-            console.log("invalid email");
-            return;
-        }
-
-        await fetch("/api/sheets", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                firstName,
-                lastName,
-                email,
-            }),
-        });
-        
-        setStatus({state: "success", msg:"RSVP submitted successfully!"});
-        console.log("submitted RSVP");
+    if (!email.match(/^\S+@\S+\.\S+$/)) {
+      setStatus({ state: "error", msg: "Please enter a valid email." });
+      return;
     }
-    
-    return(
-        <div className="text-center text-xl py-2 text-emerald-700 font-playfair min-h-screen max-h-fit bg-gold-50">
 
-        <div className="text-6xl font-semibold p-4">RSVP</div>
-        <div>We kindly ask that you respond by January 1, 2026.</div>
+    if (attendance !== "yes" && attendance !== "no") {
+      setStatus({ state: "error", msg: "Please select whether you are attending." });
+      return;
+    }
 
-        {/* FORM CONTAINER */}
-        <div className="flex flex-col text-left w-[320px] mx-auto mt-8 space-y-6">
+    setStatus({ state: "loading", msg: "" });
 
-            <label>First Name</label>
-            <input type="text" onChange={(e) => handleChange(e, setFirstName)} className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
+    try {
+      const res = await fetch("/api/sheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          email,
+          attendance,
+        }),
+      });
 
-            <label>Last Name</label>
-            <input type="text" onChange={(e) => handleChange(e, setLastName)} className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
+      if (!res.ok) throw new Error("Request failed");
 
-            <div>
-            <label>Email</label>
+      setStatus({ state: "success", msg: "RSVP submitted successfully!" });
+    } catch {
+      setStatus({ state: "error", msg: "Something went wrong. Please try again." });
+    }
+  }
 
+  return (
+    <section id="rsvp" className="py-24 px-8" style={{ backgroundColor: "#2F161D" }}>
+      <div className="max-w-2xl mx-auto">
+        <h2
+          className="text-center mb-4 text-5xl md:text-6xl"
+          style={{ color: "#A1937E", fontFamily: '"Playfair Display", serif' }}
+        >
+          RSVP
+        </h2>
+
+        <p
+          className="text-center mb-12 text-lg"
+          style={{ color: "#A18B8E", fontFamily: '"Cormorant", serif' }}
+        >
+          Please let us know if you&apos;ll be joining us on our special day
+        </p>
+
+        <form onSubmit={onSubmit} className="space-y-6">
+          <div>
+            <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+              First Name
+            </label>
+            <input
+              type="text"
+              required
+              value={firstName}
+              onChange={(e) => handleChange(e, setFirstName)}
+              className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
+              style={{
+                backgroundColor: "#301413",
+                borderColor: "#594836",
+                color: "#A1937E",
+                fontFamily: '"Cormorant", serif',
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+              Last Name
+            </label>
+            <input
+              type="text"
+              required
+              value={lastName}
+              onChange={(e) => handleChange(e, setLastName)}
+              className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
+              style={{
+                backgroundColor: "#301413",
+                borderColor: "#594836",
+                color: "#A1937E",
+                fontFamily: '"Cormorant", serif',
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => handleChange(e, setEmail)}
+              className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
+              style={{
+                backgroundColor: "#301413",
+                borderColor: "#594836",
+                color: "#A1937E",
+                fontFamily: '"Cormorant", serif',
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+              Will you be attending?
+            </label>
+
+            <div className="flex gap-4 mt-3">
+              <button
+                type="button"
+                onClick={() => setAttendance("yes")}
+                className="flex-1 py-3 px-6 rounded border-2 transition-opacity hover:opacity-90"
+                style={{
+                  backgroundColor: attendance === "yes" ? "#4D1519" : "transparent",
+                  borderColor: "#594836",
+                  color: "#A1937E",
+                  fontFamily: '"Cormorant", serif',
+                }}
+              >
+                Joyfully Accept
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setAttendance("no")}
+                className="flex-1 py-3 px-6 rounded border-2 transition-opacity hover:opacity-90"
+                style={{
+                  backgroundColor: attendance === "no" ? "#4D1519" : "transparent",
+                  borderColor: "#594836",
+                  color: "#A1937E",
+                  fontFamily: '"Cormorant", serif',
+                }}
+              >
+                Regretfully Decline
+              </button>
             </div>
-            <input type="text" onChange={(e) => handleChange(e, setEmail)} className="bg-emerald-50 border-emerald-700 border-solid border-2 rounded-md"></input>
-            <span className={status.state === "error" ? "text-red-600" : "text-emerald-700"}>{status.msg}</span>
+          </div>
 
-            <div>
-            <span className="font-semibold text-2xl">RSVP</span>
-            <div>
-                <input type="radio" name="attending"></input>
-                <label>Accepts with pleasure</label>
-            </div>
-            <div>
-                <input type="radio" name="attending"></input>
-                <label>Declines with regret</label>
-            </div>
-        
-            <div className="text-center">
-                <button onClick={onSubmit} className="bg-emerald-700 text-gold-500 text-3xl rounded-lg py-2 px-6">Submit</button>
-            </div>
-            
-            </div>
-        </div>
+          {status.msg ? (
+            <p
+              className="text-center"
+              style={{
+                color: status.state === "error" ? "#ef4444" : "#A18B8E",
+                fontFamily: '"Cormorant", serif',
+              }}
+            >
+              {status.msg}
+            </p>
+          ) : null}
 
-        </div>
-
-    );
+          <button
+            type="submit"
+            disabled={status.state === "loading"}
+            className="w-full py-4 rounded transition-opacity hover:opacity-90 disabled:opacity-60"
+            style={{
+              backgroundColor: "#612727",
+              color: "#A1937E",
+              fontFamily: '"Cormorant", serif',
+              border: "none",
+            }}
+          >
+            {status.state === "loading" ? "Submitting..." : "Submit RSVP"}
+          </button>
+        </form>
+      </div>
+    </section>
+  );
 }
 
-export default RSVP
+export default RSVP;
