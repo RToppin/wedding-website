@@ -6,8 +6,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
     
-    const { firstName, lastName, email } = req.body ?? {};
-    if (!firstName || !lastName || !email) {
+    const { firstName, lastName, email, attendance } = req.body ?? {};
+    if (!firstName || !lastName || !email || !attendance) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -29,6 +29,7 @@ export default async function handler(req, res) {
       await sheet.addRow({
         Name: `${firstName} ${lastName}`,
         Email: email,
+        Attendance: attendance,
         Timestamp: new Date().toISOString(),
       });
 

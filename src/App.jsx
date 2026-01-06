@@ -12,11 +12,16 @@ import { useRef } from 'react'
 
 
 function App() {
+  const inviteRef = useRef(null);
   const rsvpRef = useRef(null);
   const timelineRef = useRef(null);
   const locationRef = useRef(null);
   const travelRef = useRef(null);
   const faqRef = useRef(null);
+
+  const scrollToInvite = () => {
+    inviteRef.current?.scrollIntoView({ behavior: "smooth"});
+  };
 
   const scrollToRsvp = () => {
     rsvpRef.current?.scrollIntoView({ behavior: "smooth"});
@@ -42,13 +47,14 @@ function App() {
     <>
       <div className='min-h-screen max-h-fit flex flex-col'>
         <Navbar
+          onInviteClick={scrollToInvite}
           onRsvpClick={scrollToRsvp}
           onTimelineClick={scrollToTimeline}
           onLocationClick={scrollToLocation}
           onTravelClick={scrollToTravel}
           onFAQClick={scrollToFAQ}
         />
-        <Invite className="flex-1" />
+        <div ref={inviteRef}><Invite  className="flex-1" /></div>
       </div>
       <div ref={rsvpRef}><RSVP /></div>
       <div ref={timelineRef}><Timeline /></div>

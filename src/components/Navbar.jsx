@@ -1,5 +1,5 @@
 function Navbar({ 
-  onHeroClick,
+  onInviteClick,
   onRsvpClick, 
   onTimelineClick, 
   onLocationClick, 
@@ -13,7 +13,7 @@ function Navbar({
     >
       <div className="max-w-7xl mx-auto flex justify-center gap-8">
         <button
-          onClick={onHeroClick}
+          onClick={onInviteClick}
           className="capitalize transition-opacity hover:opacity-80"
           style={{
             color: "#A1937E",
