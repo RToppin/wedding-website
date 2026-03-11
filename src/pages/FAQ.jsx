@@ -7,27 +7,32 @@ function FAQ() {
     {
       question: "What should I wear?",
       answer:
-        "The dress code is formal attire. We kindly ask that guests wear elegant evening wear befitting a romantic celebration.",
+        "The dress code is formal attire. We kindly ask that guests wear elegant evening wear befitting a romantic celebration. You might want to consider having your garments professionally steamed after entering the country.",
     },
     {
-      question: "Can I bring a guest?",
+      question: "Where should I stay?",
       answer:
-        "Due to venue capacity, we are only able to accommodate guests specifically named on your invitation. Thank you for understanding.",
+        "Please see the Travel section for our recommended hotels. We suggest booking early to secure your preferred accommodations.",
     },
     {
-      question: "Will there be parking available?",
+      question: "How will I get to the venue?",
       answer:
-        "Yes, complimentary valet parking will be provided at the venue. Additional parking is available in the adjacent lot.",
+        "Our wedding planner suggests booking through Hertz for car rentals. She recommends reaching out directly to Stephane (svallier@hertz.ie) to help make the process smooth and straightforward.",
     },
     {
-      question: "Are children welcome?",
+      question: "How long do I need to be in Ireland? When should I fly in?",
       answer:
-        "While we love your little ones, we have planned an adults-only celebration. We hope this gives you an opportunity to enjoy an evening out.",
+        "You are welcome to plan your trip however you like! The only day you need to be in Ireland is Thursday, December 3rd for the ceremony. We will also be having a welcome dinner the night of Tuesday, December 2nd for those who have already arrived in the country.",
     },
     {
-      question: "What time should I arrive?",
+      question: "Do I get a plus one?",
       answer:
-        "Please arrive by 2:45 PM to be seated before the ceremony begins at 3:00 PM sharp.",
+        "Maybe! This event will be an intimate gathering of our closest family and friends. If you have a plus one, it will be noted on your invitation. If you are unsure, please contact Maddy.",
+    },
+    {
+      question: "Will there be dancing? ",
+      answer:
+        "A little dancing. Not a lot.",
     },
   ];
 

@@ -2,14 +2,6 @@ import { JWT } from "google-auth-library";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
-  }
-    
-    const { firstName, lastName, email, attendance } = req.body ?? {};
-    if (!firstName || !lastName || !email || !attendance) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
 
     const auth = new JWT({
       email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -24,18 +16,56 @@ export default async function handler(req, res) {
 
     try {
       await doc.loadInfo();
-      const sheet = doc.sheetsByTitle["RSVPs"];
-      
-      await sheet.addRow({
-        Name: `${firstName} ${lastName}`,
-        Email: email,
-        Attendance: attendance,
-        Timestamp: new Date().toISOString(),
-      });
 
-      res.status(200).json({ message: "RSVP recorded successfully" });
+      // Invite only check (optional)
+
+      if (req.method === "GET") {
+        const {code} = req.query;
+
+        if (!code) {
+          return res.status(400).json({ error: "Missing invitation code" });
+        }
+
+        const sheet = doc.sheetsByTitle["InviteCodes"];
+        const rows = await sheet.getRows();
+
+        const match = rows.find((row) => row.InvitationCode?.toLowerCase() === code.toLowerCase());
+        if (!match) {
+          return res.status(200).json({ valid: false });
+        }
+        console.log("Valid code used:", code);
+        return res.status(200).json({
+          valid: true,
+          firstName: match.FirstName,
+          lastName: match.LastName,
+          maxGuests: match.MaxGuests,
+        });
+    }
+    if (req.method === "POST") {
+      const { firstName, lastName, email, attendance } = req.body ?? {};
+
+      if (!firstName || !lastName || !email || !attendance) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+        const sheet = doc.sheetsByTitle["RSVPs"];
+        
+        await sheet.addRow({
+          Name: `${firstName} ${lastName}`,
+          Email: email,
+          Attendance: attendance,
+          Timestamp: new Date().toISOString(),
+        });
+
+        return res.status(200).json({
+        message: "RSVP recorded successfully",
+      });
+    }
+
+    return res.status(405).json({ error: "Method not allowed" });
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Failed to write to sheet" });
+    return res.status(500).json({ error: "Server error" });
   }
 }

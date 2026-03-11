@@ -4,6 +4,7 @@ function RSVP() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [invitationCode, setInvitationCode] = useState("");
   const [attendance, setAttendance] = useState(""); // "yes" | "no"
   const [status, setStatus] = useState({ state: "idle", msg: "" });
 
@@ -116,6 +117,25 @@ function RSVP() {
               required
               value={email}
               onChange={(e) => handleChange(e, setEmail)}
+              className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
+              style={{
+                backgroundColor: "#301413",
+                borderColor: "#594836",
+                color: "#A1937E",
+                fontFamily: '"Cormorant", serif',
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+              Invitation Code
+            </label>
+            <input
+              type="text"
+              required
+              value={invitationCode}
+              onChange={(e) => handleChange(e, setInvitationCode)}
               className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
               style={{
                 backgroundColor: "#301413",
