@@ -20,7 +20,7 @@ export default async function handler(req, res) {
       // Invite only check (optional)
 
       if (req.method === "GET") {
-        const {code} = req.query;
+        const { code } = req.query;
 
         if (!code) {
           return res.status(400).json({ error: "Missing invitation code" });
@@ -29,18 +29,24 @@ export default async function handler(req, res) {
         const sheet = doc.sheetsByTitle["InviteCodes"];
         const rows = await sheet.getRows();
 
-        const match = rows.find((row) => row.InvitationCode?.toLowerCase() === code.toLowerCase());
+        const normalizedCode = String(code).trim().toLowerCase();
+
+        const match = rows.find(
+          (row) =>
+            String(row.InvitationCode || "").trim().toLowerCase() === normalizedCode
+        );
+
         if (!match) {
           return res.status(200).json({ valid: false });
         }
-        console.log("Valid code used:", code);
+
         return res.status(200).json({
           valid: true,
           firstName: match.FirstName,
           lastName: match.LastName,
-          maxGuests: match.MaxGuests,
+          maxGuests: Number(match.MaxGuests),
         });
-    }
+      }
     if (req.method === "POST") {
       const { firstName, lastName, email, attendance } = req.body ?? {};
 
