@@ -23,12 +23,17 @@ export default async function handler(req, res) {
         const { code } = req.query;
 
         const sheet = doc.sheetsByTitle["InviteCodes"];
-
-        await sheet.loadHeaderRow();
+        const rows = await sheet.getRows();
 
         return res.status(200).json({
-          headerValues: sheet.headerValues,
-          rowCount: (await sheet.getRows()).length,
+          codeReceived: code,
+          rowCount: rows.length,
+          rows: rows.map((row) => ({
+            InvitationCode: row.get("InvitationCode"),
+            FirstName: row.get("FirstName"),
+            LastName: row.get("LastName"),
+            MaxGuests: row.get("MaxGuests"),
+          })),
         });
       }
 
@@ -44,10 +49,13 @@ export default async function handler(req, res) {
 
       //   const normalizedCode = String(code).trim().toLowerCase();
 
-      //   const match = rows.find(
-      //     (row) =>
-      //       String(row.InvitationCode || "").trim().toLowerCase() === normalizedCode
-      //   );
+      //   const match = rows.find((row) => {
+      //     const invitationCode = String(row.get("InvitationCode") || "")
+      //       .trim()
+      //       .toLowerCase();
+
+      //     return invitationCode === normalizedCode;
+      //   });
 
       //   if (!match) {
       //     return res.status(200).json({ valid: false });
@@ -55,11 +63,12 @@ export default async function handler(req, res) {
 
       //   return res.status(200).json({
       //     valid: true,
-      //     firstName: match.FirstName,
-      //     lastName: match.LastName,
-      //     maxGuests: Number(match.MaxGuests),
+      //     firstName: String(match.get("FirstName") || "").trim(),
+      //     lastName: String(match.get("LastName") || "").trim(),
+      //     maxGuests: Number(match.get("MaxGuests") || 0),
       //   });
       // }
+
     if (req.method === "POST") {
       const { firstName, lastName, email, attendance } = req.body ?? {};
 
