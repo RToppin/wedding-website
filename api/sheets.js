@@ -22,30 +22,13 @@ export default async function handler(req, res) {
       if (req.method === "GET") {
         const { code } = req.query;
 
-        if (!code) {
-          return res.status(400).json({ error: "Missing invitation code" });
-        }
-
         const sheet = doc.sheetsByTitle["InviteCodes"];
 
-        if (!sheet) {
-          return res.status(200).json({
-            error: "InviteCodes sheet not found",
-            availableSheets: Object.keys(doc.sheetsByTitle),
-          });
-        }
-
-        const rows = await sheet.getRows();
+        await sheet.loadHeaderRow();
 
         return res.status(200).json({
-          codeReceived: code,
-          rowCount: rows.length,
-          rows: rows.map((row) => ({
-            InvitationCode: row.InvitationCode,
-            FirstName: row.FirstName,
-            LastName: row.LastName,
-            MaxGuests: row.MaxGuests,
-          })),
+          headerValues: sheet.headerValues,
+          rowCount: (await sheet.getRows()).length,
         });
       }
 
