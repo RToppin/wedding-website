@@ -41,6 +41,10 @@ export default async function handler(req, res) {
         }
 
         return res.status(200).json({
+          codes: rows.map((row) => row.InvitationCode),
+        });
+
+        return res.status(200).json({
           valid: true,
           firstName: match.FirstName,
           lastName: match.LastName,
