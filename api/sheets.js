@@ -27,30 +27,56 @@ export default async function handler(req, res) {
         }
 
         const sheet = doc.sheetsByTitle["InviteCodes"];
-        const rows = await sheet.getRows();
 
-        const normalizedCode = String(code).trim().toLowerCase();
-
-        const match = rows.find(
-          (row) =>
-            String(row.InvitationCode || "").trim().toLowerCase() === normalizedCode
-        );
-
-        if (!match) {
-          return res.status(200).json({ valid: false });
+        if (!sheet) {
+          return res.status(200).json({
+            error: "InviteCodes sheet not found",
+            availableSheets: Object.keys(doc.sheetsByTitle),
+          });
         }
 
-        return res.status(200).json({
-          codes: rows.map((row) => row.InvitationCode),
-        });
+        const rows = await sheet.getRows();
 
         return res.status(200).json({
-          valid: true,
-          firstName: match.FirstName,
-          lastName: match.LastName,
-          maxGuests: Number(match.MaxGuests),
+          codeReceived: code,
+          rowCount: rows.length,
+          rows: rows.map((row) => ({
+            InvitationCode: row.InvitationCode,
+            FirstName: row.FirstName,
+            LastName: row.LastName,
+            MaxGuests: row.MaxGuests,
+          })),
         });
       }
+
+      // if (req.method === "GET") {
+      //   const { code } = req.query;
+
+      //   if (!code) {
+      //     return res.status(400).json({ error: "Missing invitation code" });
+      //   }
+
+      //   const sheet = doc.sheetsByTitle["InviteCodes"];
+      //   const rows = await sheet.getRows();
+
+      //   const normalizedCode = String(code).trim().toLowerCase();
+
+      //   const match = rows.find(
+      //     (row) =>
+      //       String(row.InvitationCode || "").trim().toLowerCase() === normalizedCode
+      //   );
+
+      //   if (!match) {
+      //     return res.status(200).json({ valid: false });
+      //   }
+
+      //   return res.status(200).json({
+      //     valid: true,
+      //     firstName: match.FirstName,
+      //     lastName: match.LastName,
+      //     maxGuests: Number(match.MaxGuests),
+      //   });
+      // }
     if (req.method === "POST") {
       const { firstName, lastName, email, attendance } = req.body ?? {};
 
