@@ -70,7 +70,16 @@ export default async function handler(req, res) {
       }
 
     if (req.method === "POST") {
-      const { firstName, lastName, email, attendance, invitationCode, guestCount } = req.body ?? {};
+      const {
+        firstName,
+        lastName,
+        email,
+        attendance,
+        invitationCode,
+        guestCount,
+        guestNames,
+        comments,
+      } = req.body ?? {};
 
       if (!firstName || !lastName || !email || !attendance) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -84,6 +93,8 @@ export default async function handler(req, res) {
         Attendance: attendance,
         InvitationCode: invitationCode || "",
         GuestCount: guestCount ?? "",
+        GuestNames: Array.isArray(guestNames) ? guestNames.join(", ") : "",
+        Comments: comments || "",
         Timestamp: new Date().toISOString(),
       });
     }

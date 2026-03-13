@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function RSVP() {
   const [step, setStep] = useState(1);
@@ -10,6 +10,8 @@ function RSVP() {
   const [attendance, setAttendance] = useState("");
   const [maxGuests, setMaxGuests] = useState(null);
   const [guestCount, setGuestCount] = useState("");
+  const [guestNames, setGuestNames] = useState([]);
+  const [comments, setComments] = useState("");
 
   const [status, setStatus] = useState({ state: "idle", msg: "" });
 
@@ -50,6 +52,8 @@ function RSVP() {
       setLastName(data.lastName || "");
       setMaxGuests(allowedGuests);
       setGuestCount(allowedGuests > 0 ? "1" : "0");
+      setGuestNames([]);
+      setComments("");
       setStep(2);
       setStatus({ state: "idle", msg: "" });
     } catch (err) {
@@ -58,6 +62,37 @@ function RSVP() {
         msg: "Something went wrong while verifying your code. Please try again.",
       });
     }
+  }
+
+  useEffect(() => {
+    const count = Number(guestCount);
+
+    if (!count || count <= 1) {
+      setGuestNames([]);
+      return;
+    }
+
+    const additionalGuestCount = count - 1;
+
+    setGuestNames((prev) => {
+      const next = [...prev];
+
+      if (next.length > additionalGuestCount) {
+        return next.slice(0, additionalGuestCount);
+      }
+
+      while (next.length < additionalGuestCount) {
+        next.push("");
+      }
+
+      return next;
+    });
+  }, [guestCount]);
+
+  function handleGuestNameChange(index, value) {
+    setGuestNames((prev) =>
+      prev.map((name, i) => (i === index ? value : name))
+    );
   }
 
   async function onSubmit(e) {
@@ -98,6 +133,18 @@ function RSVP() {
         });
         return;
       }
+
+      if (parsedGuestCount > 1) {
+        const hasBlankGuestName = guestNames.some((name) => !name.trim());
+
+        if (hasBlankGuestName) {
+          setStatus({
+            state: "error",
+            msg: "Please enter the names of all additional guests attending.",
+          });
+          return;
+        }
+      }
     }
 
     setStatus({ state: "loading", msg: "" });
@@ -113,6 +160,8 @@ function RSVP() {
           attendance,
           invitationCode,
           guestCount: attendance === "yes" ? Number(guestCount) : 0,
+          guestNames: attendance === "yes" ? guestNames : [],
+          comments: comments.trim(),
         }),
       });
 
@@ -138,6 +187,8 @@ function RSVP() {
     setAttendance("");
     setMaxGuests(null);
     setGuestCount("");
+    setGuestNames([]);
+    setComments("");
     setStatus({ state: "idle", msg: "" });
   }
 
@@ -328,6 +379,7 @@ function RSVP() {
                   onClick={() => {
                     setAttendance("no");
                     setGuestCount("0");
+                    setGuestNames([]);
                   }}
                   className="flex-1 py-3 px-6 rounded border-2 transition-opacity hover:opacity-90"
                   style={{
@@ -375,6 +427,71 @@ function RSVP() {
                 </select>
               </div>
             )}
+
+            {attendance === "yes" && Number(guestCount) > 1 && (
+              <div className="space-y-4">
+                <p
+                  style={{
+                    color: "#A1937E",
+                    fontFamily: '"Cormorant", serif',
+                  }}
+                >
+                  Additional Guest Names
+                </p>
+
+                {guestNames.map((guestName, index) => (
+                  <div key={index}>
+                    <label
+                      style={{
+                        color: "#A1937E",
+                        fontFamily: '"Cormorant", serif',
+                      }}
+                    >
+                      Guest {index + 2} Full Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={guestName}
+                      onChange={(e) =>
+                        handleGuestNameChange(index, e.target.value)
+                      }
+                      className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
+                      style={{
+                        backgroundColor: "#301413",
+                        borderColor: "#594836",
+                        color: "#A1937E",
+                        fontFamily: '"Cormorant", serif',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div>
+              <label
+                style={{
+                  color: "#A1937E",
+                  fontFamily: '"Cormorant", serif',
+                }}
+              >
+                Comments or Special Notes
+              </label>
+              <textarea
+                value={comments}
+                onChange={(e) => setComments(e.target.value)}
+                rows={5}
+                placeholder="Dietary restrictions, allergies, accessibility needs, or anything else you'd like us to know"
+                className="mt-2 w-full border-2 rounded px-4 py-3 outline-none resize-y"
+                style={{
+                  backgroundColor: "#301413",
+                  borderColor: "#594836",
+                  color: "#A1937E",
+                  fontFamily: '"Cormorant", serif',
+                }}
+              />
+            </div>
 
             {status.msg ? (
               <p
