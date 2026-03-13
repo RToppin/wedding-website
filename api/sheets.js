@@ -70,23 +70,21 @@ export default async function handler(req, res) {
       }
 
     if (req.method === "POST") {
-      const { firstName, lastName, email, attendance } = req.body ?? {};
+      const { firstName, lastName, email, attendance, invitationCode, guestCount } = req.body ?? {};
 
       if (!firstName || !lastName || !email || !attendance) {
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-        const sheet = doc.sheetsByTitle["RSVPs"];
-        
-        await sheet.addRow({
-          Name: `${firstName} ${lastName}`,
-          Email: email,
-          Attendance: attendance,
-          Timestamp: new Date().toISOString(),
-        });
+      const sheet = doc.sheetsByTitle["RSVPs"];
 
-        return res.status(200).json({
-        message: "RSVP recorded successfully",
+      await sheet.addRow({
+        Name: `${firstName} ${lastName}`,
+        Email: email,
+        Attendance: attendance,
+        InvitationCode: invitationCode || "",
+        GuestCount: guestCount ?? "",
+        Timestamp: new Date().toISOString(),
       });
     }
 
