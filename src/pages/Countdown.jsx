@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 function Countdown() {
-  const targetDate = new Date("2026-12-03T00:00:00");
+  const targetDate = new Date("2026-12-03T14:00:00");
 
   const getTimeLeft = () => {
     const now = new Date();
@@ -31,46 +31,44 @@ function Countdown() {
 
   return (
     <section
-      className="w-full py-12 px-6"
+      className="w-full py-12"
       style={{ backgroundColor: "#170704" }}
     >
-      <div className="max-w-4xl mx-auto text-center">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { label: "Days", value: timeLeft.days },
-            { label: "Hours", value: timeLeft.hours },
-            { label: "Minutes", value: timeLeft.minutes },
-            { label: "Seconds", value: timeLeft.seconds },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="rounded-lg border px-4 py-6"
-              style={{
-                borderColor: "#594836",
-                backgroundColor: "#170704",
-              }}
-            >
-              <div
-                className="text-3xl sm:text-4xl"
-                style={{
-                  color: "#F1E7DB",
-                  fontFamily: '"Playfair Display", serif',
-                }}
-              >
-                {item.value}
-              </div>
+      <div className="text-center">
+        <p
+          className="mb-6 text-sm sm:text-base tracking-[0.3em]"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Cormorant", serif',
+          }}
+        >
+          COUNTDOWN TO THE WEDDING
+        </p>
 
-              <div
-                className="mt-2 text-xs sm:text-sm uppercase tracking-widest"
-                style={{
-                  color: "#D6C6B8",
-                  fontFamily: '"Cormorant", serif',
-                }}
-              >
-                {item.label}
-              </div>
-            </div>
-          ))}
+        <div
+          className="text-3xl sm:text-5xl md:text-6xl flex flex-wrap justify-center items-center gap-3 sm:gap-6"
+          style={{
+            color: "#A1937E",
+            fontFamily: '"Playfair Display", serif',
+          }}
+        >
+          <span>{timeLeft.days}</span>
+          <span className="text-lg sm:text-2xl opacity-70">D</span>
+
+          <span className="opacity-50">·</span>
+
+          <span>{timeLeft.hours}</span>
+          <span className="text-lg sm:text-2xl opacity-70">H</span>
+
+          <span className="opacity-50">·</span>
+
+          <span>{timeLeft.minutes}</span>
+          <span className="text-lg sm:text-2xl opacity-70">M</span>
+
+          <span className="opacity-50">·</span>
+
+          <span>{timeLeft.seconds}</span>
+          <span className="text-lg sm:text-2xl opacity-70">S</span>
         </div>
       </div>
     </section>

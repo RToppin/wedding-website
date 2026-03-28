@@ -216,7 +216,7 @@ function RSVP() {
             fontFamily: '"Cormorant", serif',
           }}
         >
-          Please let us know if you&apos;ll be joining us on our special day
+          Please let us know if you will be joining us on our special day by August 1st, 2026. We can't wait to celebrate with you!
         </p>
 
         {step === 1 && (
@@ -268,7 +268,7 @@ function RSVP() {
                 border: "none",
               }}
             >
-              {status.state === "loading" ? "Verifying..." : "Verify Invitation"}
+              {status.state === "loading" ? "Verifying..." : "Continue to RSVP"}
             </button>
           </form>
         )}
