@@ -1,12 +1,12 @@
 function Timeline() {
   const timelineItems = [
     {
-      time: "Tuesday Evening",
+      time: "December 2, 2026",
       event: "Welcome Dinner",
       description: "For guests who have already arrived in Ireland, we’ll be gathering for a relaxed welcome dinner.",
     },
     {
-      time: "3:00 PM",
+      time: "December 3, 2026 3:00 PM",
       event: "Ceremony",
       description: "Please arrive a little early and join us as we exchange our vows.",
     },
@@ -41,7 +41,7 @@ function Timeline() {
             fontFamily: '"Playfair Display", serif',
           }}
         >
-          Wedding Weekend
+          Wedding Timeline
         </h2>
 
         <div className="space-y-10">
