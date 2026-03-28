@@ -6,8 +6,8 @@ import RSVP from './pages/RSVP'
 import Timeline from './pages/Timeline'
 import Travel from './pages/Travel'
 import FAQ from './pages/FAQ'
-import Footer from './components/Footer'
 import { useRef } from 'react'
+import Countdown from './pages/Countdown'
 
 
 
@@ -56,12 +56,12 @@ function App() {
         />
         <div ref={inviteRef}><Invite  className="flex-1" /></div>
       </div>
+      <Countdown />
       <div ref={rsvpRef}><RSVP /></div>
       <div ref={timelineRef}><Timeline /></div>
       <div ref={locationRef}><Location /></div>
       <div ref={travelRef}><Travel /></div>  
       <div ref={faqRef}><FAQ /></div>  
-      <div><Footer /></div>
     </>
   );
 }

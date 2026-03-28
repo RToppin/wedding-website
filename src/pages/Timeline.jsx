@@ -1,50 +1,54 @@
 function Timeline() {
   const timelineItems = [
     {
-      time: "3:00 PM",
-      event: "Ceremony",
-      description: "Join us as we exchange our vows",
+      time: "Tuesday Evening",
+      event: "Welcome Dinner",
+      description: "For guests who have already arrived in Ireland, we’ll be gathering for a relaxed welcome dinner.",
     },
     {
-      time: "4:30 PM",
+      time: "3:00 PM",
+      event: "Ceremony",
+      description: "Please arrive a little early and join us as we exchange our vows.",
+    },
+    {
+      time: "4:00 PM",
       event: "Cocktail Hour",
-      description: "Refreshments and mingling in the garden",
+      description: "Drinks, hors d’oeuvres, and time to enjoy the castle grounds.",
     },
     {
       time: "6:00 PM",
-      event: "Reception",
-      description: "Dinner, dancing, and celebration",
+      event: "Dinner Reception",
+      description: "A four-course meal followed by toasts and celebration.",
     },
     {
-      time: "10:00 PM",
-      event: "Last Dance",
-      description: "Send-off under the stars",
+      time: "Evening",
+      event: "Music & Dancing",
+      description: "A little dancing. Not a lot.",
     },
   ];
 
   return (
     <section
       id="timeline"
-      className="py-24 px-8 min-h-screen"
+      className="py-24 px-6 sm:px-8 min-h-screen"
       style={{ backgroundColor: "#170704" }}
     >
       <div className="max-w-4xl mx-auto">
         <h2
-          className="text-center mb-16 text-5xl md:text-6xl"
+          className="text-center mb-16 text-4xl sm:text-5xl md:text-6xl"
           style={{
             color: "#A1937E",
             fontFamily: '"Playfair Display", serif',
           }}
         >
-          Timeline
+          Wedding Weekend
         </h2>
 
-        <div className="space-y-12">
+        <div className="space-y-10">
           {timelineItems.map((item, index) => (
-            <div key={index} className="flex gap-8 items-start">
-              {/* Time */}
+            <div key={index} className="flex gap-4 sm:gap-8 items-start">
               <div
-                className="w-32 text-right flex-shrink-0"
+                className="w-24 sm:w-32 text-right flex-shrink-0 text-sm sm:text-base"
                 style={{
                   color: "#A18B8E",
                   fontFamily: '"Cormorant", serif',
@@ -53,7 +57,6 @@ function Timeline() {
                 {item.time}
               </div>
 
-              {/* Dot + line */}
               <div className="relative pt-1">
                 <div
                   className="absolute left-0 w-3 h-3 rounded-full"
@@ -68,17 +71,16 @@ function Timeline() {
                     className="absolute left-0 w-px top-6"
                     style={{
                       backgroundColor: "#594836",
-                      height: "80px",
+                      height: "85px",
                       transform: "translateX(-50%)",
                     }}
                   />
                 )}
               </div>
 
-              {/* Content */}
               <div className="flex-1">
                 <h3
-                  className="mb-2 text-2xl"
+                  className="mb-2 text-xl sm:text-2xl"
                   style={{
                     color: "#A1937E",
                     fontFamily: '"Playfair Display", serif',

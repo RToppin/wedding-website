@@ -37,7 +37,7 @@ function FAQ() {
     {
       question: "What will I be eating? ",
       answer:
-        "We will be serving a five course meal. The first two courses will be the same for all guests, but the main course will have several options for guests to choose from.",
+        "We will be serving a four course meal. The first two courses will be the same for all guests, but the main course will have several options for guests to choose from.",
     },
   ];
 
