@@ -84,7 +84,7 @@ function RSVP() {
     const count = Number(guestCount);
 
     if (!count || count <= 1) {
-      setGuestNames([]);
+      setGuestNames(parsedParty);
       return;
     }
 
