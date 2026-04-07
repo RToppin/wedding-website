@@ -66,6 +66,7 @@ export default async function handler(req, res) {
           firstName: String(match.get("FirstName") || "").trim(),
           lastName: String(match.get("LastName") || "").trim(),
           maxGuests: Number(match.get("MaxGuests") || 0),
+          party: match.get("Party") ? JSON.parse(match.get("Party")) : [],
         });
       }
 
