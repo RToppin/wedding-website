@@ -12,6 +12,7 @@ function RSVP() {
   const [guestCount, setGuestCount] = useState("");
   const [guestNames, setGuestNames] = useState([]);
   const [comments, setComments] = useState("");
+  const [party, setParty] = useState([]);
 
   const [status, setStatus] = useState({ state: "idle", msg: "" });
 
@@ -68,6 +69,7 @@ function RSVP() {
       const totalPrefilledGuests = 1 + parsedParty.length;
       setGuestCount(String(totalPrefilledGuests));
 
+      setParty(parsedParty);
       setGuestNames(parsedParty);
       setComments("");
       setStep(2);
@@ -81,29 +83,25 @@ function RSVP() {
   }
 
   useEffect(() => {
-    const count = Number(guestCount);
+  const count = Number(guestCount);
 
-    if (!count || count <= 1) {
-      setGuestNames(parsedParty);
-      return;
+  if (!count || count <= 1) {
+    setGuestNames([]);
+    return;
+  }
+
+  const additionalGuestCount = count - 1;
+
+  setGuestNames((prev) => {
+    const next = [];
+
+    for (let i = 0; i < additionalGuestCount; i++) {
+      next.push(prev[i] || party[i] || "");
     }
 
-    const additionalGuestCount = count - 1;
-
-    setGuestNames((prev) => {
-      const next = [...prev];
-
-      if (next.length > additionalGuestCount) {
-        return next.slice(0, additionalGuestCount);
-      }
-
-      while (next.length < additionalGuestCount) {
-        next.push("");
-      }
-
-      return next;
-    });
-  }, [guestCount]);
+    return next;
+  });
+}, [guestCount, party]);
 
   function handleGuestNameChange(index, value) {
     setGuestNames((prev) =>
@@ -205,6 +203,7 @@ function RSVP() {
     setGuestCount("");
     setGuestNames([]);
     setComments("");
+    setParty([]);
     setStatus({ state: "idle", msg: "" });
   }
 
