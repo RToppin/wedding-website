@@ -38,6 +38,9 @@ function RSVP() {
       if (!res.ok) throw new Error("Verification failed");
 
       const data = await res.json();
+      console.log(data);
+      console.log("party lowercase:", data.party);
+      console.log("party uppercase:", data.Party);
 
       if (!data.valid) {
         setStatus({
