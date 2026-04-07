@@ -48,11 +48,27 @@ function RSVP() {
 
       const allowedGuests = Number(data.maxGuests ?? 0);
 
+      let parsedParty = [];
+
+      if (Array.isArray(data.party)) {
+        parsedParty = data.party;
+      } else if (typeof data.party === "string" && data.party.trim()) {
+        try {
+          parsedParty = JSON.parse(data.party);
+        } catch {
+          parsedParty = [];
+        }
+      }
+
       setFirstName(data.firstName || "");
       setLastName(data.lastName || "");
       setMaxGuests(allowedGuests);
-      setGuestCount(allowedGuests > 0 ? "1" : "0");
-      setGuestNames([]);
+
+      // total attending defaults to main guest + listed party members
+      const totalPrefilledGuests = 1 + parsedParty.length;
+      setGuestCount(String(totalPrefilledGuests));
+
+      setGuestNames(parsedParty);
       setComments("");
       setStep(2);
       setStatus({ state: "idle", msg: "" });
