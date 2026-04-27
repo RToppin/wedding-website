@@ -6,17 +6,17 @@ function Timeline() {
       description: "For guests who have already arrived in Ireland, we’ll be gathering for a relaxed welcome dinner.",
     },
     {
-      time: "December 3, 2026 3:00 PM",
+      time: "December 3, 2026 2:00 PM",
       event: "Ceremony",
       description: "Please arrive a little early and join us as we exchange our vows.",
     },
     {
-      time: "4:00 PM",
+      time: "3:00 PM",
       event: "Cocktail Hour",
       description: "Drinks, hors d’oeuvres, and time to enjoy the castle grounds.",
     },
     {
-      time: "6:00 PM",
+      time: "5:30 PM",
       event: "Dinner Reception",
       description: "A four-course meal followed by toasts and celebration.",
     },

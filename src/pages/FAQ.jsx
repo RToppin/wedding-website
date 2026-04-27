@@ -7,7 +7,7 @@ function FAQ() {
     {
       question: "What should I wear?",
       answer:
-        "The dress code is formal attire. We kindly ask that guests wear elegant evening wear befitting a romantic celebration. You might want to consider having your garments professionally steamed after entering the country.",
+        "Formal attire is requested—please dress in elegant evening wear for a romantic celebration. You may want to have your outfit professionally steamed after arriving.",
     },
     {
       question: "Where should I stay?",
@@ -22,17 +22,12 @@ function FAQ() {
     {
       question: "How long do I need to be in Ireland? When should I fly in?",
       answer:
-        "You are welcome to plan your trip however you like! The only day you need to be in Ireland is Thursday, December 3rd for the ceremony. We will also be having a welcome dinner the night of Tuesday, December 2nd for those who have already arrived in the country.",
+        "You are welcome to plan your trip however you like! The only day you need to be in Ireland is Wedenesday, December 3rd for the ceremony. We will also be having a welcome dinner the night of Tuesday, December 2nd for those who have already arrived in the country.",
     },
     {
       question: "Do I get a plus one?",
       answer:
         "Maybe! This event will be an intimate gathering of our closest family and friends. If you have a plus one, it will be noted on your invitation. If you are unsure, please contact Maddy.",
-    },
-    {
-      question: "Will there be dancing? ",
-      answer:
-        "A little dancing. Not a lot.",
     },
     {
       question: "What will I be eating? ",

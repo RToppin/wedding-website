@@ -66,7 +66,7 @@ function Location() {
                 <strong>Address:</strong> Kinnitty, County Offaly, Ireland
               </p>
               <p style={{ color: "#D6C6B8", fontFamily: '"Cormorant", serif' }}>
-                <strong>Stay On-Site:</strong> A block of rooms is available at the castle for the night of the wedding.
+                <strong>Stay On-Site:</strong> A block of rooms is available at the castle for our guests. Guests using our room block will receive a discounted rate for two nights. Guests can book by calling the hotel directly and stating they are part of the Maddy and Ryan's wedding.
               </p>
             </div>
           </div>

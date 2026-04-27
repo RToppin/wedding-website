@@ -3,7 +3,7 @@ function Travel() {
     name: "Kinnitty Castle Hotel",
     type: "Wedding Venue",
     phone: "+353 (0) 57 9137318",
-    email: "weddings@kinnittycastlehotel.com",
+    email: "reception@kinnittycastlehotel.com",
     website: "https://www.kinnittycastlehotel.com",
     note: "A block of 11 rooms is available at the castle for the night of the wedding. Please notify Maddy once you’ve booked your room.",
   };
