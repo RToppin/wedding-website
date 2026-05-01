@@ -10,7 +10,7 @@ function RSVP() {
   const [attendance, setAttendance] = useState("");
   const [maxGuests, setMaxGuests] = useState(null);
   const [guestCount, setGuestCount] = useState("");
-  const [guestNames, setGuestNames] = useState([]);
+  const [guests, setGuests] = useState([]);
   const [comments, setComments] = useState("");
   const [party, setParty] = useState([]);
 
@@ -18,6 +18,20 @@ function RSVP() {
 
   function handleChange(e, setter) {
     setter(e.target.value);
+  }
+
+  function normalizeGuest(guest) {
+    if (typeof guest === "string") {
+      return {
+        name: guest || "",
+        attending: null,
+      };
+    }
+
+    return {
+      name: guest?.name || "",
+      attending: guest?.attending ?? null,
+    };
   }
 
   async function verifyCode(e) {
@@ -38,9 +52,6 @@ function RSVP() {
       if (!res.ok) throw new Error("Verification failed");
 
       const data = await res.json();
-      console.log(data);
-      console.log("party lowercase:", data.party);
-      console.log("party uppercase:", data.Party);
 
       if (!data.valid) {
         setStatus({
@@ -55,10 +66,10 @@ function RSVP() {
       let parsedParty = [];
 
       if (Array.isArray(data.party)) {
-        parsedParty = data.party;
+        parsedParty = data.party.map(normalizeGuest);
       } else if (typeof data.party === "string" && data.party.trim()) {
         try {
-          parsedParty = JSON.parse(data.party);
+          parsedParty = JSON.parse(data.party).map(normalizeGuest);
         } catch {
           parsedParty = [];
         }
@@ -68,12 +79,11 @@ function RSVP() {
       setLastName(data.lastName || "");
       setMaxGuests(allowedGuests);
 
-      // total attending defaults to main guest + listed party members
       const totalPrefilledGuests = 1 + parsedParty.length;
       setGuestCount(String(totalPrefilledGuests));
 
       setParty(parsedParty);
-      setGuestNames(parsedParty);
+      setGuests(parsedParty);
       setComments("");
       setStep(2);
       setStatus({ state: "idle", msg: "" });
@@ -86,29 +96,45 @@ function RSVP() {
   }
 
   useEffect(() => {
-  const count = Number(guestCount);
+    const count = Number(guestCount);
 
-  if (!count || count <= 1) {
-    setGuestNames([]);
-    return;
-  }
-
-  const additionalGuestCount = count - 1;
-
-  setGuestNames((prev) => {
-    const next = [];
-
-    for (let i = 0; i < additionalGuestCount; i++) {
-      next.push(prev[i] || party[i] || "");
+    if (!count || count <= 1) {
+      setGuests([]);
+      return;
     }
 
-    return next;
-  });
-}, [guestCount, party]);
+    const additionalGuestCount = count - 1;
+
+    setGuests((prev) => {
+      const next = [];
+
+      for (let i = 0; i < additionalGuestCount; i++) {
+        next.push(
+          prev[i] ||
+            party[i] || {
+              name: "",
+              attending: null,
+            }
+        );
+      }
+
+      return next;
+    });
+  }, [guestCount, party]);
 
   function handleGuestNameChange(index, value) {
-    setGuestNames((prev) =>
-      prev.map((name, i) => (i === index ? value : name))
+    setGuests((prev) =>
+      prev.map((guest, i) =>
+        i === index ? { ...guest, name: value || "" } : guest
+      )
+    );
+  }
+
+  function handleGuestAttendanceChange(index, value) {
+    setGuests((prev) =>
+      prev.map((guest, i) =>
+        i === index ? { ...guest, attending: value } : guest
+      )
     );
   }
 
@@ -151,16 +177,26 @@ function RSVP() {
         return;
       }
 
-      if (parsedGuestCount > 1) {
-        const hasBlankGuestName = guestNames.some((name) => !name.trim());
+      const hasBlankGuestName = guests.some((guest) => !guest.name.trim());
 
-        if (hasBlankGuestName) {
-          setStatus({
-            state: "error",
-            msg: "Please enter the names of all additional guests attending.",
-          });
-          return;
-        }
+      if (hasBlankGuestName) {
+        setStatus({
+          state: "error",
+          msg: "Please enter the names of all additional guests attending.",
+        });
+        return;
+      }
+
+      const hasMissingGuestAttendance = guests.some(
+        (guest) => guest.attending === null
+      );
+
+      if (hasMissingGuestAttendance) {
+        setStatus({
+          state: "error",
+          msg: "Please select yes or no for each guest.",
+        });
+        return;
       }
     }
 
@@ -177,7 +213,7 @@ function RSVP() {
           attendance,
           invitationCode,
           guestCount: attendance === "yes" ? Number(guestCount) : 0,
-          guestNames: attendance === "yes" ? guestNames : [],
+          guests: attendance === "yes" ? guests : [],
           comments: comments.trim(),
         }),
       });
@@ -204,7 +240,7 @@ function RSVP() {
     setAttendance("");
     setMaxGuests(null);
     setGuestCount("");
-    setGuestNames([]);
+    setGuests([]);
     setComments("");
     setParty([]);
     setStatus({ state: "idle", msg: "" });
@@ -240,12 +276,7 @@ function RSVP() {
         {step === 1 && (
           <form onSubmit={verifyCode} className="space-y-6">
             <div>
-              <label
-                style={{
-                  color: "#A1937E",
-                  fontFamily: '"Cormorant", serif',
-                }}
-              >
+              <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                 Invitation Code
               </label>
               <input
@@ -295,28 +326,14 @@ function RSVP() {
           <form onSubmit={onSubmit} className="space-y-6">
             <div
               className="rounded border-2 p-4"
-              style={{
-                backgroundColor: "#301413",
-                borderColor: "#594836",
-              }}
+              style={{ backgroundColor: "#301413", borderColor: "#594836" }}
             >
-              <p
-                style={{
-                  color: "#A1937E",
-                  fontFamily: '"Cormorant", serif',
-                }}
-              >
+              <p style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                 Verified for <strong>{firstName} {lastName}</strong>
               </p>
 
               {maxGuests !== null && (
-                <p
-                  className="mt-2"
-                  style={{
-                    color: "#A18B8E",
-                    fontFamily: '"Cormorant", serif',
-                  }}
-                >
+                <p className="mt-2" style={{ color: "#A18B8E", fontFamily: '"Cormorant", serif' }}>
                   Invitation allows up to {maxGuests}{" "}
                   {maxGuests === 1 ? "guest" : "guests"}.
                 </p>
@@ -340,12 +357,7 @@ function RSVP() {
             </div>
 
             <div>
-              <label
-                style={{
-                  color: "#A1937E",
-                  fontFamily: '"Cormorant", serif',
-                }}
-              >
+              <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                 Email
               </label>
               <input
@@ -364,12 +376,7 @@ function RSVP() {
             </div>
 
             <div>
-              <label
-                style={{
-                  color: "#A1937E",
-                  fontFamily: '"Cormorant", serif',
-                }}
-              >
+              <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                 Will you be attending?
               </label>
 
@@ -382,8 +389,7 @@ function RSVP() {
                   }}
                   className="flex-1 py-3 px-6 rounded border-2 transition-opacity hover:opacity-90"
                   style={{
-                    backgroundColor:
-                      attendance === "yes" ? "#4D1519" : "transparent",
+                    backgroundColor: attendance === "yes" ? "#4D1519" : "transparent",
                     borderColor: "#594836",
                     color: "#A1937E",
                     fontFamily: '"Cormorant", serif',
@@ -397,12 +403,11 @@ function RSVP() {
                   onClick={() => {
                     setAttendance("no");
                     setGuestCount("0");
-                    setGuestNames([]);
+                    setGuests([]);
                   }}
                   className="flex-1 py-3 px-6 rounded border-2 transition-opacity hover:opacity-90"
                   style={{
-                    backgroundColor:
-                      attendance === "no" ? "#4D1519" : "transparent",
+                    backgroundColor: attendance === "no" ? "#4D1519" : "transparent",
                     borderColor: "#594836",
                     color: "#A1937E",
                     fontFamily: '"Cormorant", serif',
@@ -415,12 +420,7 @@ function RSVP() {
 
             {attendance === "yes" && maxGuests > 0 && (
               <div>
-                <label
-                  style={{
-                    color: "#A1937E",
-                    fontFamily: '"Cormorant", serif',
-                  }}
-                >
+                <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                   Number Attending
                 </label>
                 <select
@@ -435,45 +435,32 @@ function RSVP() {
                     fontFamily: '"Cormorant", serif',
                   }}
                 >
-                  {Array.from({ length: maxGuests }, (_, i) => i + 1).map(
-                    (count) => (
-                      <option key={count} value={count}>
-                        {count}
-                      </option>
-                    )
-                  )}
+                  {Array.from({ length: maxGuests }, (_, i) => i + 1).map((count) => (
+                    <option key={count} value={count}>
+                      {count}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
 
             {attendance === "yes" && Number(guestCount) > 1 && (
               <div className="space-y-4">
-                <p
-                  style={{
-                    color: "#A1937E",
-                    fontFamily: '"Cormorant", serif',
-                  }}
-                >
+                <p style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                   Additional Guest Names
                 </p>
 
-                {guestNames.map((guestName, index) => (
-                  <div key={index}>
-                    <label
-                      style={{
-                        color: "#A1937E",
-                        fontFamily: '"Cormorant", serif',
-                      }}
-                    >
+                {guests.map((guest, index) => (
+                  <div key={index} className="rounded border-2 p-4" style={{ borderColor: "#594836" }}>
+                    <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                       Guest {index + 2} Full Name
                     </label>
+
                     <input
                       type="text"
                       required
-                      value={guestName}
-                      onChange={(e) =>
-                        handleGuestNameChange(index, e.target.value)
-                      }
+                      value={guest.name || ""}
+                      onChange={(e) => handleGuestNameChange(index, e.target.value)}
                       className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
                       style={{
                         backgroundColor: "#301413",
@@ -482,18 +469,49 @@ function RSVP() {
                         fontFamily: '"Cormorant", serif',
                       }}
                     />
+
+                    <div className="mt-4">
+                      <p style={{ color: "#A18B8E", fontFamily: '"Cormorant", serif' }}>
+                        Is this guest attending?
+                      </p>
+
+                      <div className="flex gap-4 mt-2">
+                        <button
+                          type="button"
+                          onClick={() => handleGuestAttendanceChange(index, true)}
+                          className="flex-1 py-2 px-4 rounded border-2"
+                          style={{
+                            backgroundColor: guest.attending === true ? "#4D1519" : "transparent",
+                            borderColor: "#594836",
+                            color: "#A1937E",
+                            fontFamily: '"Cormorant", serif',
+                          }}
+                        >
+                          Yes
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleGuestAttendanceChange(index, false)}
+                          className="flex-1 py-2 px-4 rounded border-2"
+                          style={{
+                            backgroundColor: guest.attending === false ? "#4D1519" : "transparent",
+                            borderColor: "#594836",
+                            color: "#A1937E",
+                            fontFamily: '"Cormorant", serif',
+                          }}
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
 
             <div>
-              <label
-                style={{
-                  color: "#A1937E",
-                  fontFamily: '"Cormorant", serif',
-                }}
-              >
+              <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
                 Comments or Special Notes
               </label>
               <textarea
