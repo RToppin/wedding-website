@@ -101,7 +101,7 @@ export default async function handler(req, res) {
     const normalizedGuests = [
       {
         name: primaryName,
-        attending: attendance === "yes",
+        attending: primaryAttending === true,
       },
       ...additionalGuests.map((guest) => ({
         name: String(guest.name || guest).trim(),
