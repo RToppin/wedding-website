@@ -72,50 +72,83 @@ export default async function handler(req, res) {
       });
     }
 
-    if (req.method === "POST") {
-      const {
-        firstName,
-        lastName,
-        email,
-        attendance,
-        invitationCode,
-        guestCount,
-        guests,
-        guestNames,
-        comments,
-      } = req.body ?? {};
+  if (req.method === "POST") {
+    const {
+      firstName,
+      lastName,
+      email,
+      attendance,
+      invitationCode,
+      guestCount,
+      guests,
+      guestNames,
+      comments,
+    } = req.body ?? {};
 
-      if (!firstName || !lastName || !email || !attendance) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
-
-      const finalGuests = Array.isArray(guests)
-        ? guests
-        : Array.isArray(guestNames)
-          ? guestNames.map((name) => ({
-              name,
-              attending: true,
-            }))
-          : [];
-
-      const sheet = doc.sheetsByTitle["RSVPs"];
-
-      await sheet.addRow({
-        Name: `${firstName} ${lastName}`,
-        Email: email,
-        Attendance: attendance,
-        InvitationCode: invitationCode || "",
-        GuestCount: guestCount ?? "",
-        Guests: JSON.stringify(finalGuests),
-        GuestNames: finalGuests.map((guest) => guest.name).join(", "),
-        Comments: comments || "",
-        Timestamp: new Date().toISOString(),
-      });
-
-      return res.status(200).json({
-        message: "RSVP recorded successfully",
-      });
+    if (!firstName || !lastName || !email || !attendance || !invitationCode) {
+      return res.status(400).json({ error: "Missing required fields" });
     }
+
+    const normalizedInvitationCode = String(invitationCode).trim().toLowerCase();
+    const primaryName = `${String(firstName).trim()} ${String(lastName).trim()}`;
+
+    const additionalGuests = Array.isArray(guests)
+      ? guests
+      : Array.isArray(guestNames)
+        ? guestNames.map((name) => ({ name, attending: true }))
+        : [];
+
+    const normalizedGuests = [
+      {
+        name: primaryName,
+        attending: attendance === "yes",
+      },
+      ...additionalGuests.map((guest) => ({
+        name: String(guest.name || guest).trim(),
+        attending: guest.attending === true,
+      })),
+    ].filter((guest) => guest.name);
+
+    const sheet = doc.sheetsByTitle["RSVPs"];
+    const rows = await sheet.getRows();
+
+    const existingRow = rows.find((row) => {
+      return (
+        String(row.get("InvitationCode") || "").trim().toLowerCase() ===
+        normalizedInvitationCode
+      );
+    });
+
+    const rowData = {
+      InvitationCode: normalizedInvitationCode,
+      PrimaryName: primaryName,
+      Email: String(email).trim(),
+      OverallAttendance: attendance,
+      GuestCount: attendance === "yes" ? normalizedGuests.length : 0,
+      Guests: JSON.stringify(normalizedGuests),
+      Comments: comments || "",
+      Timestamp: new Date().toISOString(),
+    };
+
+    if (existingRow) {
+      existingRow.set("InvitationCode", rowData.InvitationCode);
+      existingRow.set("PrimaryName", rowData.PrimaryName);
+      existingRow.set("Email", rowData.Email);
+      existingRow.set("OverallAttendance", rowData.OverallAttendance);
+      existingRow.set("GuestCount", rowData.GuestCount);
+      existingRow.set("Guests", rowData.Guests);
+      existingRow.set("Comments", rowData.Comments);
+      existingRow.set("Timestamp", rowData.Timestamp);
+
+      await existingRow.save();
+    } else {
+      await sheet.addRow(rowData);
+    }
+
+    return res.status(200).json({
+      message: "RSVP recorded successfully",
+    });
+  }
 
     return res.status(405).json({ error: "Method not allowed" });
   } catch (err) {
