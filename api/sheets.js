@@ -80,6 +80,7 @@ export default async function handler(req, res) {
       attendance,
       invitationCode,
       guestCount,
+      primaryAttending,
       guests,
       guestNames,
       comments,

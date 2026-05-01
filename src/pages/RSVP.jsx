@@ -11,6 +11,7 @@ function RSVP() {
   const [maxGuests, setMaxGuests] = useState(null);
   const [guestCount, setGuestCount] = useState("");
   const [guests, setGuests] = useState([]);
+  const [primaryAttending, setPrimaryAttending] = useState(null);
   const [comments, setComments] = useState("");
   const [party, setParty] = useState([]);
 
@@ -84,6 +85,7 @@ function RSVP() {
 
       setParty(parsedParty);
       setGuests(parsedParty);
+      setPrimaryAttending(null);
       setComments("");
       setStep(2);
       setStatus({ state: "idle", msg: "" });
@@ -165,6 +167,14 @@ function RSVP() {
     if (attendance === "yes") {
       const parsedGuestCount = Number(guestCount);
 
+      if (primaryAttending === null) {
+        setStatus({
+          state: "error",
+          msg: "Please select yes or no for the primary guest.",
+        });
+        return;
+      }
+
       if (
         Number.isNaN(parsedGuestCount) ||
         parsedGuestCount < 1 ||
@@ -213,6 +223,7 @@ function RSVP() {
           attendance,
           invitationCode,
           guestCount: attendance === "yes" ? Number(guestCount) : 0,
+          primaryAttending,
           guests: attendance === "yes" ? guests : [],
           comments: comments.trim(),
         }),
@@ -239,6 +250,7 @@ function RSVP() {
     setEmail("");
     setAttendance("");
     setMaxGuests(null);
+    setPrimaryAttending(null);
     setGuestCount("");
     setGuests([]);
     setComments("");
@@ -441,6 +453,56 @@ function RSVP() {
                     </option>
                   ))}
                 </select>
+              </div>
+            )}
+
+            {attendance === "yes" && (
+              <div className="space-y-4">
+                <p style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+                  Primary Guest
+                </p>
+
+                <div className="rounded border-2 p-4" style={{ borderColor: "#594836" }}>
+                  <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+                    {firstName} {lastName}
+                  </label>
+
+                  <div className="mt-4">
+                    <p style={{ color: "#A18B8E", fontFamily: '"Cormorant", serif' }}>
+                      Are you attending?
+                    </p>
+
+                    <div className="flex gap-4 mt-2">
+                      <button
+                        type="button"
+                        onClick={() => setPrimaryAttending(true)}
+                        className="flex-1 py-2 px-4 rounded border-2"
+                        style={{
+                          backgroundColor: primaryAttending === true ? "#4D1519" : "transparent",
+                          borderColor: "#594836",
+                          color: "#A1937E",
+                          fontFamily: '"Cormorant", serif',
+                        }}
+                      >
+                        Yes
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setPrimaryAttending(false)}
+                        className="flex-1 py-2 px-4 rounded border-2"
+                        style={{
+                          backgroundColor: primaryAttending === false ? "#4D1519" : "transparent",
+                          borderColor: "#594836",
+                          color: "#A1937E",
+                          fontFamily: '"Cormorant", serif',
+                        }}
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
