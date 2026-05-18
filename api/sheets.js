@@ -22,11 +22,11 @@ export default async function handler(req, res) {
 
       const normalizedName = String(name).trim().toLowerCase();
 
-      // Check RSVPs sheet for existing RSVP
-      const rsvpsSheet = doc.sheetsByTitle["RSVPs"];
-      const rsvpRows = await rsvpsSheet.getRows();
+      // Check Responses sheet for existing response
+      const responsesSheet = doc.sheetsByTitle["Responses"];
+      const responsesRows = await responsesSheet.getRows();
 
-      const rsvpMatch = rsvpRows.find((row) => {
+      const responseMatch = responsesRows.find((row) => {
         try {
           const rawParty = row.get("Party");
           if (rawParty) {
@@ -42,12 +42,15 @@ export default async function handler(req, res) {
         return false;
       });
 
-      if (rsvpMatch) {
+      console.log("Searching Responses sheet for:", normalizedName);
+      console.log("Responses rows found:", responsesRows.length);
+
+      if (responseMatch) {
         let party = [];
         let plusOnes = [];
 
         try {
-          const rawParty = rsvpMatch.get("Party");
+          const rawParty = responseMatch.get("Party");
 
           if (rawParty) {
             const parsed = JSON.parse(rawParty);
@@ -61,7 +64,7 @@ export default async function handler(req, res) {
         }
 
         try {
-          const rawPlusOnes = rsvpMatch.get("PlusOneNames");
+          const rawPlusOnes = responseMatch.get("PlusOneNames");
 
           if (rawPlusOnes) {
             const parsed = JSON.parse(rawPlusOnes);
@@ -76,25 +79,25 @@ export default async function handler(req, res) {
 
         return res.status(200).json({
           valid: true,
-          plusOneCount: Number(rsvpMatch.get("PlusOneCount") || 0),
+          plusOneCount: Number(responseMatch.get("PlusOneCount") || 0),
           party,
           existingRSVP: {
-            guestCount: Number(rsvpMatch.get("GuestCount") || 0),
+            guestCount: Number(responseMatch.get("GuestCount") || 0),
             party,
             plusOnes,
-            comments: String(rsvpMatch.get("Comments") || "").trim(),
+            comments: String(responseMatch.get("Comments") || "").trim(),
           },
         });
       }
 
-      // If not found in RSVPs, search Responses sheet for initial party data
-      const responsesSheet = doc.sheetsByTitle["Responses"];
-      const responsesRows = await responsesSheet.getRows();
+      // If not found in Responses, search Guests sheet for initial party data
+      const guestsSheet = doc.sheetsByTitle["Guests"];
+      const guestsRows = await guestsSheet.getRows();
 
-      console.log("Searching for name:", normalizedName);
-      console.log("Responses rows found:", responsesRows.length);
+      console.log("Searching Guests sheet for:", normalizedName);
+      console.log("Guests rows found:", guestsRows.length);
 
-      const responseMatch = responsesRows.find((row) => {
+      const guestMatch = guestsRows.find((row) => {
         const rawParty = row.get("Party");
         console.log("Row Party field:", rawParty);
         if (rawParty) {
@@ -107,14 +110,14 @@ export default async function handler(req, res) {
         return false;
       });
 
-      if (!responseMatch) {
+      if (!guestMatch) {
         return res.status(200).json({ valid: false });
       }
 
       let party = [];
 
       try {
-        const rawParty = responseMatch.get("Party");
+        const rawParty = guestMatch.get("Party");
 
         if (rawParty) {
           party = rawParty.split(",").map((name) => ({
@@ -128,19 +131,19 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         valid: true,
-        plusOneCount: Number(responseMatch.get("PlusOneCount") || 0),
+        plusOneCount: Number(guestMatch.get("PlusOneCount") || 0),
         party,
         existingRSVP: null,
       });
     }
 
-  if (req.method === "POST") {
-    const {
-      party,
-      plusOnes,
-      plusOneCount,
-      comments,
-    } = req.body ?? {};
+    if (req.method === "POST") {
+      const {
+        party,
+        plusOnes,
+        plusOneCount,
+        comments,
+      } = req.body ?? {};
 
     if (!party || !Array.isArray(party) || party.length === 0) {
       return res.status(400).json({ error: "Missing party data" });
@@ -150,7 +153,7 @@ export default async function handler(req, res) {
     const normalizedPlusOnes = Array.isArray(plusOnes) ? plusOnes : [];
     const firstGuestName = String(party[0].name || "").trim().toLowerCase();
 
-    const sheet = doc.sheetsByTitle["RSVPs"];
+    const sheet = doc.sheetsByTitle["Responses"];
     const rows = await sheet.getRows();
 
     const existingRow = rows.find((row) => {
@@ -172,6 +175,7 @@ export default async function handler(req, res) {
     const rowData = {
       Party: JSON.stringify(normalizedParty),
       PlusOneNames: JSON.stringify(normalizedPlusOnes),
+      PlusOneCount: Number(plusOneCount) || 0,
       GuestCount: normalizedParty.length + normalizedPlusOnes.length,
       Comments: comments || "",
       Timestamp: new Date().toISOString(),
@@ -180,6 +184,7 @@ export default async function handler(req, res) {
     if (existingRow) {
       existingRow.set("Party", rowData.Party);
       existingRow.set("PlusOneNames", rowData.PlusOneNames);
+      existingRow.set("PlusOneCount", rowData.PlusOneCount);
       existingRow.set("GuestCount", rowData.GuestCount);
       existingRow.set("Comments", rowData.Comments);
       existingRow.set("Timestamp", rowData.Timestamp);
