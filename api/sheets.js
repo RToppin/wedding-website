@@ -91,11 +91,18 @@ export default async function handler(req, res) {
       const responsesSheet = doc.sheetsByTitle["Responses"];
       const responsesRows = await responsesSheet.getRows();
 
+      console.log("Searching for name:", normalizedName);
+      console.log("Responses rows found:", responsesRows.length);
+
       const responseMatch = responsesRows.find((row) => {
         const rawParty = row.get("Party");
+        console.log("Row Party field:", rawParty);
         if (rawParty) {
           const partyNames = rawParty.split(",").map((name) => name.trim().toLowerCase());
-          return partyNames.includes(normalizedName);
+          console.log("Parsed party names:", partyNames);
+          const match = partyNames.includes(normalizedName);
+          console.log("Name match:", match);
+          return match;
         }
         return false;
       });
