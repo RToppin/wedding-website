@@ -44,6 +44,7 @@ export default async function handler(req, res) {
 
       if (rsvpMatch) {
         let party = [];
+        let plusOnes = [];
 
         try {
           const rawParty = rsvpMatch.get("Party");
@@ -59,6 +60,20 @@ export default async function handler(req, res) {
           party = [];
         }
 
+        try {
+          const rawPlusOnes = rsvpMatch.get("PlusOneNames");
+
+          if (rawPlusOnes) {
+            const parsed = JSON.parse(rawPlusOnes);
+            plusOnes = parsed.map((guest) => ({
+              name: guest.name || "",
+              attending: guest.attending ?? null,
+            }));
+          }
+        } catch {
+          plusOnes = [];
+        }
+
         return res.status(200).json({
           valid: true,
           plusOneCount: Number(rsvpMatch.get("PlusOneCount") || 0),
@@ -66,67 +81,39 @@ export default async function handler(req, res) {
           existingRSVP: {
             guestCount: Number(rsvpMatch.get("GuestCount") || 0),
             party,
+            plusOnes,
             comments: String(rsvpMatch.get("Comments") || "").trim(),
           },
         });
       }
 
-      // If not found in RSVPs, search InviteCodes sheet for initial party data
-      const inviteSheet = doc.sheetsByTitle["InviteCodes"];
-      const inviteRows = await inviteSheet.getRows();
+      // If not found in RSVPs, search Responses sheet for initial party data
+      const responsesSheet = doc.sheetsByTitle["Responses"];
+      const responsesRows = await responsesSheet.getRows();
 
-      const inviteMatch = inviteRows.find((row) => {
-        const firstName = String(row.get("FirstName") || "").trim().toLowerCase();
-        const lastName = String(row.get("LastName") || "").trim().toLowerCase();
-        const fullName = `${firstName} ${lastName}`;
-
-        // Check if name matches first+last name
-        if (fullName === normalizedName) {
-          return true;
+      const responseMatch = responsesRows.find((row) => {
+        const rawParty = row.get("Party");
+        if (rawParty) {
+          const partyNames = rawParty.split(",").map((name) => name.trim().toLowerCase());
+          return partyNames.includes(normalizedName);
         }
-
-        // Check if name matches any party member
-        try {
-          const rawParty = row.get("Party");
-          if (rawParty) {
-            const parsed = JSON.parse(rawParty);
-            return parsed.some((guest) => {
-              const guestName = typeof guest === "string" ? guest : guest.name;
-              return String(guestName || "").trim().toLowerCase() === normalizedName;
-            });
-          }
-        } catch {
-          return false;
-        }
-
         return false;
       });
 
-      if (!inviteMatch) {
+      if (!responseMatch) {
         return res.status(200).json({ valid: false });
       }
 
       let party = [];
 
       try {
-        const rawParty = inviteMatch.get("Party");
+        const rawParty = responseMatch.get("Party");
 
         if (rawParty) {
-          const parsed = JSON.parse(rawParty);
-
-          party = parsed.map((guest) => {
-            if (typeof guest === "string") {
-              return {
-                name: guest,
-                attending: null,
-              };
-            }
-
-            return {
-              name: guest.name || "",
-              attending: guest.attending ?? null,
-            };
-          });
+          party = rawParty.split(",").map((name) => ({
+            name: name.trim(),
+            attending: null,
+          }));
         }
       } catch {
         party = [];
@@ -134,7 +121,7 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         valid: true,
-        plusOneCount: Number(inviteMatch.get("MaxGuests") || 0) - 1,
+        plusOneCount: Number(responseMatch.get("PlusOneCount") || 0),
         party,
         existingRSVP: null,
       });
@@ -143,6 +130,7 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     const {
       party,
+      plusOnes,
       plusOneCount,
       comments,
     } = req.body ?? {};
@@ -152,6 +140,7 @@ export default async function handler(req, res) {
     }
 
     const normalizedParty = party;
+    const normalizedPlusOnes = Array.isArray(plusOnes) ? plusOnes : [];
     const firstGuestName = String(party[0].name || "").trim().toLowerCase();
 
     const sheet = doc.sheetsByTitle["RSVPs"];
@@ -175,15 +164,15 @@ export default async function handler(req, res) {
 
     const rowData = {
       Party: JSON.stringify(normalizedParty),
-      PlusOneCount: Number(plusOneCount) || 0,
-      GuestCount: normalizedParty.length,
+      PlusOneNames: JSON.stringify(normalizedPlusOnes),
+      GuestCount: normalizedParty.length + normalizedPlusOnes.length,
       Comments: comments || "",
       Timestamp: new Date().toISOString(),
     };
 
     if (existingRow) {
       existingRow.set("Party", rowData.Party);
-      existingRow.set("PlusOneCount", rowData.PlusOneCount);
+      existingRow.set("PlusOneNames", rowData.PlusOneNames);
       existingRow.set("GuestCount", rowData.GuestCount);
       existingRow.set("Comments", rowData.Comments);
       existingRow.set("Timestamp", rowData.Timestamp);

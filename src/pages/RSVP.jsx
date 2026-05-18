@@ -74,17 +74,7 @@ function RSVP() {
       if (data.existingRSVP) {
         setComments(data.existingRSVP.comments || "");
         setParty(data.existingRSVP.party || parsedParty);
-        
-        // Calculate plus ones from existing data
-        const basePartySize = parsedParty.length;
-        const totalGuests = data.existingRSVP.party.length;
-        const existingPlusOnes = totalGuests - basePartySize;
-        
-        if (existingPlusOnes > 0) {
-          setPlusOnes(data.existingRSVP.party.slice(basePartySize));
-        } else {
-          setPlusOnes([]);
-        }
+        setPlusOnes(data.existingRSVP.plusOnes || []);
       } else {
         setParty(parsedParty);
         setPlusOnes([]);
@@ -187,7 +177,8 @@ function RSVP() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          party: [...party, ...plusOnes],
+          party,
+          plusOnes,
           plusOneCount,
           comments: comments.trim(),
         }),
