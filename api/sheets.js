@@ -14,33 +14,100 @@ export default async function handler(req, res) {
     await doc.loadInfo();
 
     if (req.method === "GET") {
-      const { code } = req.query;
+      const { name } = req.query;
 
-      if (!code) {
-        return res.status(400).json({ error: "Missing invitation code" });
+      if (!name) {
+        return res.status(400).json({ error: "Missing full name" });
       }
 
-      const sheet = doc.sheetsByTitle["InviteCodes"];
-      const rows = await sheet.getRows();
+      const normalizedName = String(name).trim().toLowerCase();
 
-      const normalizedCode = String(code).trim().toLowerCase();
+      // First, check RSVPs sheet for existing RSVP
+      const rsvpsSheet = doc.sheetsByTitle["RSVPs"];
+      const rsvpRows = await rsvpsSheet.getRows();
 
-      const match = rows.find((row) => {
-        const invitationCode = String(row.get("InvitationCode") || "")
-          .trim()
-          .toLowerCase();
-
-        return invitationCode === normalizedCode;
+      const rsvpMatch = rsvpRows.find((row) => {
+        const primaryName = String(row.get("PrimaryName") || "").trim().toLowerCase();
+        return primaryName === normalizedName;
       });
 
-      if (!match) {
+      if (rsvpMatch) {
+        let guests = [];
+
+        try {
+          const rawGuests = rsvpMatch.get("Guests");
+
+          if (rawGuests) {
+            const parsed = JSON.parse(rawGuests);
+            guests = parsed.map((guest) => ({
+              name: guest.name || "",
+              attending: guest.attending ?? null,
+            }));
+          }
+        } catch {
+          guests = [];
+        }
+
+        const primaryName = String(rsvpMatch.get("PrimaryName") || "").trim();
+        const nameParts = primaryName.split(" ");
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
+
+        return res.status(200).json({
+          valid: true,
+          firstName,
+          lastName,
+          email: String(rsvpMatch.get("Email") || "").trim(),
+          maxGuests: guests.length,
+          party: guests,
+          existingRSVP: {
+            overallAttendance: String(rsvpMatch.get("OverallAttendance") || "").trim(),
+            guestCount: Number(rsvpMatch.get("GuestCount") || 0),
+            guests,
+            comments: String(rsvpMatch.get("Comments") || "").trim(),
+          },
+        });
+      }
+
+      // If not found in RSVPs, search InviteCodes sheet
+      const inviteSheet = doc.sheetsByTitle["InviteCodes"];
+      const inviteRows = await inviteSheet.getRows();
+
+      const inviteMatch = inviteRows.find((row) => {
+        const firstName = String(row.get("FirstName") || "").trim().toLowerCase();
+        const lastName = String(row.get("LastName") || "").trim().toLowerCase();
+        const fullName = `${firstName} ${lastName}`;
+
+        // Check if name matches first+last name
+        if (fullName === normalizedName) {
+          return true;
+        }
+
+        // Check if name matches any party member
+        try {
+          const rawParty = row.get("Party");
+          if (rawParty) {
+            const parsed = JSON.parse(rawParty);
+            return parsed.some((guest) => {
+              const guestName = typeof guest === "string" ? guest : guest.name;
+              return String(guestName || "").trim().toLowerCase() === normalizedName;
+            });
+          }
+        } catch {
+          return false;
+        }
+
+        return false;
+      });
+
+      if (!inviteMatch) {
         return res.status(200).json({ valid: false });
       }
 
       let party = [];
 
       try {
-        const rawParty = match.get("Party");
+        const rawParty = inviteMatch.get("Party");
 
         if (rawParty) {
           const parsed = JSON.parse(rawParty);
@@ -65,10 +132,11 @@ export default async function handler(req, res) {
 
       return res.status(200).json({
         valid: true,
-        firstName: String(match.get("FirstName") || "").trim(),
-        lastName: String(match.get("LastName") || "").trim(),
-        maxGuests: Number(match.get("MaxGuests") || 0),
+        firstName: String(inviteMatch.get("FirstName") || "").trim(),
+        lastName: String(inviteMatch.get("LastName") || "").trim(),
+        maxGuests: Number(inviteMatch.get("MaxGuests") || 0),
         party,
+        existingRSVP: null,
       });
     }
 
@@ -78,7 +146,6 @@ export default async function handler(req, res) {
       lastName,
       email,
       attendance,
-      invitationCode,
       guestCount,
       primaryAttending,
       guests,
@@ -86,12 +153,12 @@ export default async function handler(req, res) {
       comments,
     } = req.body ?? {};
 
-    if (!firstName || !lastName || !email || !attendance || !invitationCode) {
+    if (!firstName || !lastName || !email || !attendance) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const normalizedInvitationCode = String(invitationCode).trim().toLowerCase();
     const primaryName = `${String(firstName).trim()} ${String(lastName).trim()}`;
+    const normalizedPrimaryName = primaryName.toLowerCase();
 
     const additionalGuests = Array.isArray(guests)
       ? guests
@@ -115,13 +182,12 @@ export default async function handler(req, res) {
 
     const existingRow = rows.find((row) => {
       return (
-        String(row.get("InvitationCode") || "").trim().toLowerCase() ===
-        normalizedInvitationCode
+        String(row.get("PrimaryName") || "").trim().toLowerCase() ===
+        normalizedPrimaryName
       );
     });
 
     const rowData = {
-      InvitationCode: normalizedInvitationCode,
       PrimaryName: primaryName,
       Email: String(email).trim(),
       OverallAttendance: attendance,
@@ -132,7 +198,6 @@ export default async function handler(req, res) {
     };
 
     if (existingRow) {
-      existingRow.set("InvitationCode", rowData.InvitationCode);
       existingRow.set("PrimaryName", rowData.PrimaryName);
       existingRow.set("Email", rowData.Email);
       existingRow.set("OverallAttendance", rowData.OverallAttendance);

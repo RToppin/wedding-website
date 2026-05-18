@@ -5,8 +5,8 @@ function RSVP() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [invitationCode, setInvitationCode] = useState("");
   const [attendance, setAttendance] = useState("");
   const [maxGuests, setMaxGuests] = useState(null);
   const [guestCount, setGuestCount] = useState("");
@@ -35,11 +35,11 @@ function RSVP() {
     };
   }
 
-  async function verifyCode(e) {
+  async function verifyName(e) {
     e.preventDefault();
 
-    if (!invitationCode.trim()) {
-      setStatus({ state: "error", msg: "Please enter your invitation code." });
+    if (!fullName.trim()) {
+      setStatus({ state: "error", msg: "Please enter your full name." });
       return;
     }
 
@@ -47,7 +47,7 @@ function RSVP() {
 
     try {
       const res = await fetch(
-        `/api/sheets?code=${encodeURIComponent(invitationCode.trim())}`
+        `/api/sheets?name=${encodeURIComponent(fullName.trim())}`
       );
 
       if (!res.ok) throw new Error("Verification failed");
@@ -57,7 +57,7 @@ function RSVP() {
       if (!data.valid) {
         setStatus({
           state: "error",
-          msg: "That invitation code could not be found. Please try again.",
+          msg: "That name could not be found. Please try again.",
         });
         return;
       }
@@ -80,19 +80,38 @@ function RSVP() {
       setLastName(data.lastName || "");
       setMaxGuests(allowedGuests);
 
-      const totalPrefilledGuests = 1 + parsedParty.length;
-      setGuestCount(String(totalPrefilledGuests));
+      // If existing RSVP data, pre-populate
+      if (data.existingRSVP) {
+        setEmail(data.email || "");
+        setAttendance(data.existingRSVP.overallAttendance || "");
+        setComments(data.existingRSVP.comments || "");
+        
+        if (data.existingRSVP.guests && data.existingRSVP.guests.length > 0) {
+          const primaryGuest = data.existingRSVP.guests[0];
+          setPrimaryAttending(primaryGuest.attending);
+          
+          const additionalGuests = data.existingRSVP.guests.slice(1);
+          setGuests(additionalGuests);
+          setGuestCount(String(data.existingRSVP.guestCount || additionalGuests.length + 1));
+          setParty(additionalGuests);
+        }
+      } else {
+        const totalPrefilledGuests = 1 + parsedParty.length;
+        setGuestCount(String(totalPrefilledGuests));
+        setParty(parsedParty);
+        setGuests(parsedParty);
+        setPrimaryAttending(null);
+        setComments("");
+        setEmail("");
+        setAttendance("");
+      }
 
-      setParty(parsedParty);
-      setGuests(parsedParty);
-      setPrimaryAttending(null);
-      setComments("");
       setStep(2);
       setStatus({ state: "idle", msg: "" });
     } catch (err) {
       setStatus({
         state: "error",
-        msg: "Something went wrong while verifying your code. Please try again.",
+        msg: "Something went wrong while verifying your name. Please try again.",
       });
     }
   }
@@ -119,6 +138,12 @@ function RSVP() {
             }
         );
       }
+
+      // Always add one blank row for additional guests
+      next.push({
+        name: "",
+        attending: null,
+      });
 
       return next;
     });
@@ -221,7 +246,6 @@ function RSVP() {
           lastName,
           email,
           attendance,
-          invitationCode,
           guestCount: attendance === "yes" ? Number(guestCount) : 0,
           primaryAttending,
           guests: attendance === "yes" ? guests : [],
@@ -247,6 +271,7 @@ function RSVP() {
     setStep(1);
     setFirstName("");
     setLastName("");
+    setFullName("");
     setEmail("");
     setAttendance("");
     setMaxGuests(null);
@@ -286,16 +311,16 @@ function RSVP() {
         </p>
 
         {step === 1 && (
-          <form onSubmit={verifyCode} className="space-y-6">
+          <form onSubmit={verifyName} className="space-y-6">
             <div>
               <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
-                Invitation Code
+                Full Name
               </label>
               <input
                 type="text"
                 required
-                value={invitationCode}
-                onChange={(e) => handleChange(e, setInvitationCode)}
+                value={fullName}
+                onChange={(e) => handleChange(e, setFullName)}
                 className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
                 style={{
                   backgroundColor: "#301413",
@@ -329,7 +354,7 @@ function RSVP() {
                 border: "none",
               }}
             >
-              {status.state === "loading" ? "Verifying..." : "Continue to RSVP"}
+              {status.state === "loading" ? "Searching..." : "Continue to RSVP"}
             </button>
           </form>
         )}
@@ -364,7 +389,7 @@ function RSVP() {
                   cursor: "pointer",
                 }}
               >
-                Use a different invitation code
+                Use a different name
               </button>
             </div>
 
