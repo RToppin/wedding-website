@@ -4,6 +4,7 @@ function RSVP() {
   const [step, setStep] = useState(1);
 
   const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
   const [plusOneCount, setPlusOneCount] = useState(0);
   const [party, setParty] = useState([]);
   const [plusOnes, setPlusOnes] = useState([]);
@@ -72,12 +73,14 @@ function RSVP() {
 
       // If existing RSVP data, pre-populate
       if (data.existingRSVP) {
+        setEmail(data.existingRSVP.email || "");
         setComments(data.existingRSVP.comments || "");
         setParty(data.existingRSVP.party || parsedParty);
         setPlusOnes(data.existingRSVP.plusOnes || []);
       } else {
         setParty(parsedParty);
         setPlusOnes([]);
+        setEmail("");
         setComments("");
       }
 
@@ -134,6 +137,12 @@ function RSVP() {
   async function onSubmit(e) {
     e.preventDefault();
 
+    // Validate email
+    if (!email.match(/^\S+@\S+\.\S+$/)) {
+      setStatus({ state: "error", msg: "Please enter a valid email." });
+      return;
+    }
+
     // Validate all party members have attendance selected
     const hasMissingPartyAttendance = party.some(
       (guest) => guest.attending === null
@@ -180,6 +189,7 @@ function RSVP() {
           party,
           plusOnes,
           plusOneCount,
+          email: email.trim(),
           comments: comments.trim(),
         }),
       });
@@ -201,6 +211,7 @@ function RSVP() {
   function resetVerification() {
     setStep(1);
     setFullName("");
+    setEmail("");
     setPlusOneCount(0);
     setParty([]);
     setPlusOnes([]);
@@ -316,6 +327,25 @@ function RSVP() {
               >
                 Use a different name
               </button>
+            </div>
+
+            <div>
+              <label style={{ color: "#A1937E", fontFamily: '"Cormorant", serif' }}>
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => handleChange(e, setEmail)}
+                className="mt-2 w-full border-2 rounded px-4 py-3 outline-none"
+                style={{
+                  backgroundColor: "#301413",
+                  borderColor: "#594836",
+                  color: "#A1937E",
+                  fontFamily: '"Cormorant", serif',
+                }}
+              />
             </div>
 
             <div className="space-y-4">

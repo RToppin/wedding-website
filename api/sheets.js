@@ -85,6 +85,7 @@ export default async function handler(req, res) {
             guestCount: Number(responseMatch.get("GuestCount") || 0),
             party,
             plusOnes,
+            email: String(responseMatch.get("Email") || "").trim(),
             comments: String(responseMatch.get("Comments") || "").trim(),
           },
         });
@@ -142,6 +143,7 @@ export default async function handler(req, res) {
         party,
         plusOnes,
         plusOneCount,
+        email,
         comments,
       } = req.body ?? {};
 
@@ -177,6 +179,7 @@ export default async function handler(req, res) {
       PlusOneNames: JSON.stringify(normalizedPlusOnes),
       PlusOneCount: Number(plusOneCount) || 0,
       GuestCount: normalizedParty.length + normalizedPlusOnes.length,
+      Email: email || "",
       Comments: comments || "",
       Timestamp: new Date().toISOString(),
     };
@@ -186,6 +189,7 @@ export default async function handler(req, res) {
       existingRow.set("PlusOneNames", rowData.PlusOneNames);
       existingRow.set("PlusOneCount", rowData.PlusOneCount);
       existingRow.set("GuestCount", rowData.GuestCount);
+      existingRow.set("Email", rowData.Email);
       existingRow.set("Comments", rowData.Comments);
       existingRow.set("Timestamp", rowData.Timestamp);
 
