@@ -1,5 +1,6 @@
 import { JWT } from "google-auth-library";
 import { GoogleSpreadsheet } from "google-spreadsheet";
+import { Resend } from "resend";
 
 export default async function handler(req, res) {
   const auth = new JWT({
@@ -9,6 +10,8 @@ export default async function handler(req, res) {
   });
 
   const doc = new GoogleSpreadsheet(process.env.GOOGLE_SHEET_ID, auth);
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
     await doc.loadInfo();
@@ -196,6 +199,34 @@ export default async function handler(req, res) {
       await existingRow.save();
     } else {
       await sheet.addRow(rowData);
+
+      // Send email notification for first-time RSVP
+      try {
+        const partyNames = normalizedParty.map((g) => g.name).join(", ");
+        const attendingCount = normalizedParty.filter((g) => g.attending).length;
+        const plusOneNames = normalizedPlusOnes.map((g) => g.name).join(", ");
+        const plusOneAttendingCount = normalizedPlusOnes.filter((g) => g.attending).length;
+
+        await resend.emails.send({
+          from: "onboarding@resend.dev",
+          to: "toppin.wedding15@gmail.com",
+          subject: "New RSVP Received!",
+          html: `
+            <h2>New RSVP Submission</h2>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Party Members:</strong> ${partyNames}</p>
+            <p><strong>Attending:</strong> ${attendingCount} of ${normalizedParty.length}</p>
+            ${plusOneNames ? `<p><strong>Plus Ones:</strong> ${plusOneNames}</p>` : ""}
+            ${plusOneNames ? `<p><strong>Plus Ones Attending:</strong> ${plusOneAttendingCount} of ${normalizedPlusOnes.length}</p>` : ""}
+            <p><strong>Total Guests:</strong> ${rowData.GuestCount}</p>
+            ${comments ? `<p><strong>Comments:</strong> ${comments}</p>` : ""}
+            <p><strong>Submitted:</strong> ${new Date(rowData.Timestamp).toLocaleString()}</p>
+          `,
+        });
+      } catch (emailError) {
+        console.error("Failed to send email notification:", emailError);
+        // Don't fail the RSVP if email fails
+      }
     }
 
     return res.status(200).json({
