@@ -1,6 +1,5 @@
 import { JWT } from "google-auth-library";
 import { GoogleSpreadsheet } from "google-spreadsheet";
-import { Resend } from "resend";
 
 export default async function handler(req, res) {
   const auth = new JWT({
@@ -201,6 +200,7 @@ export default async function handler(req, res) {
       // Send email notification for first-time RSVP
       if (process.env.RESEND_API_KEY) {
         try {
+          const { Resend } = await import("resend");
           const resend = new Resend(process.env.RESEND_API_KEY);
           const partyNames = normalizedParty.map((g) => g.name).join(", ");
           const attendingCount = normalizedParty.filter((g) => g.attending).length;
