@@ -22,7 +22,7 @@ function FAQ() {
     {
       question: "How long do I need to be in Ireland? When should I fly in?",
       answer:
-        "You are welcome to plan your trip however you like! The only day you need to be in Ireland is Wedenesday, December 3rd for the ceremony. We will also be having a welcome dinner the night of Tuesday, December 2nd for those who have already arrived in the country.",
+        "You are welcome to plan your trip however you like! The only day you need to be in Ireland is December 3rd for the ceremony. We will also be having a welcome dinner the night of December 2nd for those who have already arrived in the country.",
     },
     {
       question: "Do I get a plus one?",
